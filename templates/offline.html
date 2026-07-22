@@ -1,0 +1,88 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>You're Offline — Swahilipot Hub Portal</title>
+  <meta name="theme-color" content="#1e40af">
+  <link rel="manifest" href="{% static 'manifest.json' %}">
+  <link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}">
+  <script>
+    (function(){
+      var t;
+      try{t=localStorage.getItem("spPortalTheme");}catch(e){}
+      if(!t&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches){t="dark";}
+      if(t){document.documentElement.setAttribute("data-theme",t);}
+    })();
+  </script>
+  <style>
+    :root{--primary:#0F4C81;--bg:#f4f7fb;--ink:#1f2937;--surface:#ffffff;--border:#e5e7eb;--muted:#6b7280}
+    html[data-theme="dark"]{--bg:#0f1117;--ink:#e5e7eb;--surface:#1a1f2e;--border:#2d3444;--muted:#9ca3af}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      background:var(--bg);color:var(--ink);
+      min-height:100vh;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      padding:24px;
+      text-align:center;
+    }
+    .icon-wrap{
+      width:96px;height:96px;border-radius:24px;
+      background:var(--primary);
+      display:flex;align-items:center;justify-content:center;
+      margin-bottom:28px;
+      box-shadow:0 8px 32px rgba(15,76,129,.35);
+    }
+    .icon-wrap svg{width:48px;height:48px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    h1{font-size:1.65rem;font-weight:800;margin-bottom:10px}
+    p{color:var(--muted);font-size:1rem;max-width:340px;line-height:1.55;margin-bottom:28px}
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;
+      background:var(--primary);color:#fff;
+      border:none;border-radius:10px;
+      padding:12px 28px;font-size:1rem;font-weight:600;
+      cursor:pointer;text-decoration:none;
+      box-shadow:0 4px 16px rgba(15,76,129,.3);
+      transition:opacity .15s;
+    }
+    .btn:hover{opacity:.88}
+    .cached-note{
+      margin-top:32px;font-size:.82rem;color:var(--muted);
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:10px;padding:14px 18px;max-width:360px;
+    }
+    .cached-note strong{color:var(--ink)}
+  </style>
+</head>
+<body>
+  <div class="icon-wrap">
+    <!-- wifi-off icon -->
+    <svg viewBox="0 0 24 24">
+      <line x1="1" y1="1" x2="23" y2="23"/>
+      <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+      <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+      <path d="M10.71 5.05A16 16 0 0 1 22.56 9"/>
+      <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+      <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+      <circle cx="12" cy="20" r="1" fill="#fff" stroke="none"/>
+    </svg>
+  </div>
+
+  <h1>You're offline</h1>
+  <p>No internet connection detected. Some pages you visited recently are still available below.</p>
+
+  <button class="btn" onclick="window.location.reload()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+    </svg>
+    Try again
+  </button>
+
+  <div class="cached-note">
+    <strong>Available offline:</strong><br>
+    Dashboard, Mobile Check-in, and any pages you recently opened are cached and will load even without internet.
+  </div>
+</body>
+</html>

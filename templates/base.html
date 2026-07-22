@@ -1,0 +1,731 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if site_settings %}{{ site_settings.site_name }}{% else %}Swahilipot Hub Portal{% endif %}</title>
+  <!-- ── PWA / Installable app meta ───────────────────────────────────── -->
+  <link rel="manifest" href="{% static 'manifest.json' %}">
+  <meta name="theme-color" content="#1e40af">
+
+  <!-- iOS / Safari (iPhone & iPad) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SPH Portal">
+  <link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}">
+  <link rel="apple-touch-icon" sizes="152x152" href="{% static 'icons/icon-152x152.png' %}">
+  <link rel="apple-touch-icon" sizes="192x192" href="{% static 'icons/icon-192x192.png' %}">
+
+  <!-- Windows / Microsoft (tiles) -->
+  <meta name="msapplication-TileImage" content="{% static 'icons/icon-144x144.png' %}">
+  <meta name="msapplication-TileColor" content="#1e40af">
+  <meta name="msapplication-config" content="none">
+
+  <!-- Standard favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32x32.png' %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'icons/favicon-16x16.png' %}">
+  <!-- Apply saved theme immediately to prevent flash of wrong theme -->
+  <script>
+    (function(){
+      var t;
+      try{t=localStorage.getItem("spPortalTheme");}catch(e){}
+      if(!t&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches){t="dark";}
+      if(t){document.documentElement.setAttribute("data-theme",t);}
+    })();
+  </script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
+  <link href="{% static 'css/portal.css' %}?v=2" rel="stylesheet">
+  <style>
+    /* ── Swahilipot logo in sidebar ── */
+    .brand{
+      display:flex;align-items:center;gap:10px;
+      padding:18px 16px 14px;
+      border-bottom:1px solid rgba(255,255,255,.1);
+      margin-bottom:10px;
+    }
+    .brand-logo-img{
+      width:72px;height:72px;border-radius:16px;
+      background:rgba(255,255,255,.95);
+      overflow:hidden;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 0 20px rgba(30,64,175,.4), 0 0 0 3px rgba(255,255,255,.2);
+    }
+    .brand-logo-img img{width:100%;height:100%;object-fit:contain;padding:6px}
+    .brand-text{display:flex;flex-direction:column;line-height:1.1}
+    .brand-name-txt{font-size:.95rem;font-weight:800;color:#fff;letter-spacing:.2px}
+    .brand-sub-txt{font-size:.62rem;color:rgba(255,255,255,.55);letter-spacing:.3px}
+
+    /* ── Sidebar scroll fade at bottom (sticky, inside sidebar only) ── */
+    .sidebar::after{
+      content:'';
+      position:sticky;
+      bottom:0;
+      display:block;
+      width:100%;height:48px;
+      margin-top:-48px;
+      background:linear-gradient(to bottom, transparent, rgba(15,76,129,.96));
+      pointer-events:none;
+      flex-shrink:0;
+    }
+
+    /* ── Mobile hamburger button — hidden on desktop, shown on mobile ── */
+    .sidebar-toggle{
+      display:none;  /* hidden on desktop; media query in portal.css shows it on mobile */
+      background:none;border:1.5px solid var(--topbar-border);
+      border-radius:8px;padding:6px 10px;cursor:pointer;
+      color:var(--ink);font-size:1.2rem;line-height:1;
+      align-items:center;justify-content:center;
+      transition:background .15s;
+      touch-action:manipulation;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .sidebar-toggle:hover{background:var(--surface2)}
+
+    /* ── Mobile overlay backdrop ── */
+    .sidebar-overlay{
+      display:none;
+      position:fixed;inset:0;
+      background:rgba(0,0,0,.55);
+      z-index:299;
+      -webkit-tap-highlight-color:transparent;
+    }
+  </style>
+</head>
+<body>
+{% if user.is_authenticated %}
+<!-- Mobile sidebar overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo-img">
+        {% if site_settings and site_settings.logo %}
+          <img src="{{ site_settings.logo.url }}" alt="Logo">
+        {% else %}
+          <img src="https://swahilipothub.co.ke/wp-content/uploads/2021/06/Swahilipot-logo-Trans.png"
+               onerror="this.src='{% static 'images/swahilipot-logo.jfif' %}';this.onerror=null;"
+               alt="Swahilipot">
+        {% endif %}
+      </div>
+      <div class="brand-text">
+        <span class="brand-name-txt">{% if site_settings %}{{ site_settings.site_name|truncatechars:18 }}{% else %}Swahilipot{% endif %}</span>
+        <span class="brand-sub-txt">{% if site_settings %}{{ site_settings.tagline|truncatechars:22 }}{% else %}Hub Portal{% endif %}</span>
+      </div>
+    </div>
+
+    <!-- Role badge in sidebar -->
+    <div class="sidebar-role-badge">
+      {% if user.is_portal_admin %}
+        <span class="srb srb-admin"><i class="bi bi-shield-fill me-1"></i>Admin</span>
+      {% elif user.role == "program_manager" %}
+        <span class="srb srb-pm"><i class="bi bi-star-fill me-1"></i>Program Manager</span>
+      {% elif user.role == "department_head" %}
+        <span class="srb srb-dh"><i class="bi bi-diagram-3-fill me-1"></i>Dept Head</span>
+      {% elif user.role == "intern" %}
+        <span class="srb srb-intern"><i class="bi bi-mortarboard-fill me-1"></i>Intern</span>
+      {% else %}
+        <span class="srb srb-staff"><i class="bi bi-person-fill me-1"></i>Staff</span>
+      {% endif %}
+    </div>
+
+    <a href="{% url 'dashboard:home' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="{% url 'attendance:home' %}"><i class="bi bi-geo-alt"></i> Attendance</a>
+    <a href="{% url 'attendance:my_location_timeout' %}"><i class="bi bi-clock-history"></i> Location Timeout</a>
+    {% if user.can_monitor_all_attendance %}
+    <a href="{% url 'attendance:missed_checkout' %}"><i class="bi bi-door-open"></i> Missed Checkout</a>
+    <a href="{% url 'attendance:location_activity' %}"
+       style="padding-left:2.2rem;font-size:.85rem;opacity:.9"
+       id="sidebar-loc-activity">
+      <i class="bi bi-broadcast text-warning"></i> Location Activity
+      <span id="sidebar-loc-off-count"
+            class="badge bg-danger ms-1"
+            style="display:none;font-size:.6rem"></span>
+    </a>
+    {% endif %}
+
+    {% if user.is_portal_admin %}
+    <a href="{% url 'attendance:sites' %}"><i class="bi bi-pin-map"></i> Project Sites</a>
+    {% endif %}
+    {% if user.can_view_geofence_violations %}
+    <a href="{% url 'attendance:geofence_violations' %}"><i class="bi bi-exclamation-triangle"></i> Violations</a>
+    {% endif %}
+    {% if user.is_portal_admin %}
+    <a href="{% url 'accounts:user_directory' %}"><i class="bi bi-people"></i> User Directory</a>
+    <a href="{% url 'accounts:departments' %}"><i class="bi bi-building"></i> Departments</a>
+    <a href="{% url 'core:logo_settings' %}"><i class="bi bi-image"></i> Logo & Branding</a>
+    {% endif %}
+    <a href="{% url 'attendance:mobile_checkin' %}"><i class="bi bi-phone"></i> Mobile Check-in</a>
+
+    <a href="{% url 'tasks:list' %}"><i class="bi bi-check2-square"></i> Tasks</a>
+    <a href="{% url 'dashboard:reminders' %}"><i class="bi bi-calendar-check"></i> Reminders</a>
+    <a href="{% url 'events:list' %}"><i class="bi bi-calendar-event"></i> Events</a>
+    {% if user.can_manage_events %}
+    <a href="{% url 'events:all_no_shows' %}" style="padding-left:2.2rem;font-size:.85rem;opacity:.9">
+      <i class="bi bi-person-x"></i> No-Shows
+    </a>
+    <a href="{% url 'events:all_no_shows' %}" style="padding-left:2.2rem;font-size:.85rem;opacity:.9">
+      <i class="bi bi-person-slash"></i> Not Registered
+    </a>
+    {% endif %}
+    <a href="{% url 'communication:home' %}"><i class="bi bi-chat-dots"></i> Communication</a>
+    <a href="{% url 'suggestions:list' %}"><i class="bi bi-lightbulb"></i> Suggestions</a>
+
+    {% if user.can_view_reports %}
+    <div style="border-top:1px solid rgba(255,255,255,.12);margin:10px 0 8px"></div>
+    <a href="{% url 'dashboard:reports' %}"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a>
+    {% endif %}
+
+    <!-- Bottom padding so last link clears the scrollbar thumb -->
+    <div style="height:24px"></div>
+
+    <!-- Sidebar scroll — native styled scrollbar; drag the bar on the right edge -->
+  </aside>
+
+  <main class="main">
+    <nav class="topbar">
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Open navigation menu" aria-expanded="false">
+        <i class="bi bi-list"></i>
+      </button>
+      <span class="fw-semibold">{{ user.get_full_name|default:user.username }}</span>
+      <div class="ms-auto d-flex gap-3 align-items-center">
+        <!-- Dark/Light mode toggle -->
+        <button id="themeToggleBtn"
+                class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
+                title="Toggle light / dark mode"
+                aria-label="Toggle colour theme"
+                style="font-size:.75rem;padding:4px 10px;border-radius:8px">
+          <i class="bi bi-moon-fill" id="themeIcon"></i>
+          <span id="themeLabel" class="d-none d-sm-inline">Dark</span>
+        </button>
+        <a class="position-relative" href="{% url 'communication:notifications' %}">
+          <i class="bi bi-bell fs-5"></i>
+          {% if unread_notifications_count %}
+          <span class="badge rounded-pill text-bg-warning">{{ unread_notifications_count }}</span>
+          {% endif %}
+        </a>
+        <!-- Push notification subscribe button -->
+        <button id="pushSubscribeBtn"
+                class="btn btn-sm d-flex align-items-center gap-1"
+                title="Enable push notifications"
+                style="font-size:.75rem;padding:4px 10px;border-radius:8px;display:none!important">
+          <i class="bi bi-bell-slash" id="pushBellIcon"></i>
+        </button>
+        <a href="{% url 'accounts:profile' %}" class="topbar-avatar">
+          {% if user.profile_photo %}
+            <img src="{{ user.profile_photo.url }}" alt="avatar">
+          {% else %}
+            <i class="bi bi-person-circle"></i>
+          {% endif %}
+        </a>
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button class="btn btn-sm btn-outline-primary">Logout</button>
+        </form>
+      </div>
+    </nav>
+    <section class="content pwa-content">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+      {% endfor %}
+      {% block content %}{% endblock %}
+    </section>
+  </main>
+</div>
+
+<!-- ── PWA Install Banner (Android / Chrome / Edge / Samsung) ──────────── -->
+<div id="pwaInstallBanner" class="pwa-install-banner" style="display:none" role="banner" aria-label="Install app">
+  <div class="pwa-install-inner">
+    <img src="{% static 'icons/icon-96x96.png' %}" alt="Portal icon" class="pwa-install-icon">
+    <div class="pwa-install-text">
+      <strong>Install Swahilipot Hub Portal</strong>
+      <span>Add to your home screen for quick access</span>
+    </div>
+    <button id="pwaInstallBtn" class="pwa-install-accept">Install</button>
+    <button id="pwaInstallDismiss" class="pwa-install-close" aria-label="Dismiss">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+</div>
+
+<!-- ── iOS Install Instructions Modal ─────────────────────────────────── -->
+<div id="iosInstallModal" class="pwa-ios-modal" style="display:none" role="dialog" aria-modal="true" aria-label="Install on iPhone or iPad">
+  <div class="pwa-ios-sheet">
+    <button class="pwa-ios-close" id="iosModalClose" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+    <img src="{% static 'icons/icon-96x96.png' %}" alt="App icon" class="pwa-ios-icon">
+    <h2 class="pwa-ios-title">Install on iPhone / iPad</h2>
+    <p class="pwa-ios-sub">Add this portal to your home screen for a full-screen app experience.</p>
+    <ol class="pwa-ios-steps">
+      <li>
+        <span class="pwa-ios-num">1</span>
+        <span>Tap the <strong>Share</strong> button
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin:0 2px">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+          </svg>
+          at the bottom of Safari</span>
+      </li>
+      <li>
+        <span class="pwa-ios-num">2</span>
+        <span>Scroll down and tap <strong>"Add to Home Screen"</strong></span>
+      </li>
+      <li>
+        <span class="pwa-ios-num">3</span>
+        <span>Tap <strong>"Add"</strong> — the app icon will appear on your home screen</span>
+      </li>
+    </ol>
+    <p class="pwa-ios-note"><i class="bi bi-info-circle me-1"></i>Only available in <strong>Safari</strong> on iOS. If you're using Chrome or another browser, open this page in Safari first.</p>
+  </div>
+</div>
+
+<!-- ── Mobile bottom navigation (standalone PWA mode) ─────────────────── -->
+<nav class="pwa-bottom-nav" id="pwaBottomNav" aria-label="Mobile navigation">
+  <a href="{% url 'dashboard:home' %}" class="pwa-nav-item {% if request.resolver_match.view_name == 'dashboard:home' %}pwa-nav-active{% endif %}">
+    <i class="bi bi-speedometer2"></i><span>Home</span>
+  </a>
+  <a href="{% url 'attendance:mobile_checkin' %}" class="pwa-nav-item {% if request.resolver_match.view_name == 'attendance:mobile_checkin' %}pwa-nav-active{% endif %}">
+    <i class="bi bi-geo-alt-fill"></i><span>Check In</span>
+  </a>
+  <a href="{% url 'tasks:list' %}" class="pwa-nav-item {% if request.resolver_match.view_name == 'tasks:list' %}pwa-nav-active{% endif %}">
+    <i class="bi bi-check2-square"></i><span>Tasks</span>
+  </a>
+  <a href="{% url 'communication:notifications' %}" class="pwa-nav-item {% if request.resolver_match.view_name == 'communication:notifications' %}pwa-nav-active{% endif %} position-relative">
+    <i class="bi bi-bell-fill"></i>
+    {% if unread_notifications_count %}<span class="pwa-nav-badge">{{ unread_notifications_count }}</span>{% endif %}
+    <span>Alerts</span>
+  </a>
+  <a href="{% url 'accounts:profile' %}" class="pwa-nav-item {% if request.resolver_match.view_name == 'accounts:profile' %}pwa-nav-active{% endif %}">
+    <i class="bi bi-person-circle"></i><span>Profile</span>
+  </a>
+</nav>
+
+{% else %}
+{% block public_content %}{% endblock %}
+{% endif %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{% static 'js/notification_sounds.js' %}"></script>
+
+<!-- ── Theme toggle (light / dark) ─────────────────────────────────── -->
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_KEY = "spPortalTheme";
+  var html        = document.documentElement;
+  var btn         = document.getElementById("themeToggleBtn");
+  var icon        = document.getElementById("themeIcon");
+  var label       = document.getElementById("themeLabel");
+
+  // Resolve: saved pref → OS preference → default light
+  function getSavedTheme() {
+    try { return localStorage.getItem(STORAGE_KEY); } catch (e) { return null; }
+  }
+  function getOSTheme() {
+    return (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)
+      ? "dark" : "light";
+  }
+
+  var current = getSavedTheme() || getOSTheme();
+  applyTheme(current);
+
+  function applyTheme(theme) {
+    current = theme;
+    html.setAttribute("data-theme", theme);
+    if (btn) {
+      if (theme === "dark") {
+        icon.className  = "bi bi-sun-fill";
+        if (label) label.textContent = "Light";
+        btn.title = "Switch to light mode";
+      } else {
+        icon.className  = "bi bi-moon-fill";
+        if (label) label.textContent = "Dark";
+        btn.title = "Switch to dark mode";
+      }
+    }
+    try { localStorage.setItem(STORAGE_KEY, theme); } catch (e) {}
+  }
+
+  if (btn) {
+    btn.addEventListener("click", function () {
+      applyTheme(current === "dark" ? "light" : "dark");
+    });
+  }
+
+  // Respond to OS preference changes if user has no saved pref
+  if (window.matchMedia) {
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function (e) {
+      if (!getSavedTheme()) applyTheme(e.matches ? "dark" : "light");
+    });
+  }
+})();
+</script>
+<script>
+// ── Live notification badge + sound — polls every 30 s ───────────────────
+(function() {
+  var bellLink = document.querySelector('a[href*="notifications"]');
+  if (!bellLink) return;
+
+  // Track previous unread count to detect new arrivals
+  // Seed from the server-rendered badge so we don't false-alarm on first load
+  var existingBadge = bellLink.querySelector('.badge');
+  var lastUnread = existingBadge ? parseInt(existingBadge.textContent, 10) || 0 : 0;
+  var firstPoll  = true;   // skip sound on the very first fetch (page load)
+
+  function refreshBadge() {
+    fetch('{% url "communication:notifications" %}', {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      if (!data) return;
+
+      // ── Update badge ──────────────────────────────────────────────────
+      var badge = bellLink.querySelector('.badge');
+      if (data.unread > 0) {
+        if (badge) {
+          badge.textContent = data.unread;
+        } else {
+          badge = document.createElement('span');
+          badge.className = 'badge rounded-pill text-bg-warning';
+          badge.textContent = data.unread;
+          bellLink.appendChild(badge);
+        }
+      } else {
+        if (badge) badge.remove();
+      }
+
+      // ── Play sound only when NEW unread notifications arrive ──────────
+      if (!firstPoll && data.unread > lastUnread && window.portalSound) {
+        window.portalSound.play(data.highest_priority || 'medium');
+      }
+      firstPoll  = false;
+      lastUnread = data.unread;
+    })
+    .catch(function() {});
+  }
+
+  // First poll after 3 s (page settle), then every 30 s
+  setTimeout(function poll() { refreshBadge(); setTimeout(poll, 30000); }, 3000);
+})();
+</script>
+
+{% if user.can_view_location_activity %}
+<script>
+// ── Location Activity sidebar badge — shows who has location off ──────────
+(function () {
+  var badge   = document.getElementById('sidebar-loc-off-count');
+  var link    = document.getElementById('sidebar-loc-activity');
+  if (!badge || !link) return;
+
+  function refreshLocBadge() {
+    fetch('{% url "attendance:location_off_status" %}', { credentials: 'same-origin' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (data) {
+      if (!data) return;
+      if (data.count > 0) {
+        badge.textContent = data.count;
+        badge.style.display = 'inline-block';
+        // Build tooltip: list each name and time off
+        var tip = data.users.map(function (u) {
+          return u.name + ' (off since ' + u.off_since + ')';
+        }).join('\n');
+        link.title = '⚠ Location off:\n' + tip;
+      } else {
+        badge.style.display = 'none';
+        link.title = '';
+      }
+    })
+    .catch(function () {});
+  }
+
+  refreshLocBadge();
+  setInterval(refreshLocBadge, 30000);
+})();
+</script>
+{% endif %}
+{% block scripts %}{% endblock %}
+
+<!-- ── Sidebar mobile toggle ────────────────────────────────────────── -->
+<script>
+(function () {
+  "use strict";
+  var sidebar  = document.getElementById("sidebar");
+  var overlay  = document.getElementById("sidebarOverlay");
+  var toggle   = document.getElementById("sidebarToggle");
+
+  if (!sidebar || !toggle) return;  // not authenticated / desktop only
+
+  function openSidebar() {
+    sidebar.classList.add("sidebar-open");
+    if (overlay) {
+      overlay.style.display = "block";
+    }
+    toggle.setAttribute("aria-expanded", "true");
+    document.documentElement.style.overflow = "hidden";  // prevent background scroll
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove("sidebar-open");
+    if (overlay) {
+      overlay.style.display = "none";
+    }
+    toggle.setAttribute("aria-expanded", "false");
+    document.documentElement.style.overflow = "";
+  }
+
+  toggle.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (sidebar.classList.contains("sidebar-open")) {
+      closeSidebar();
+    } else {
+      openSidebar();
+    }
+  });
+
+  // Close when overlay is tapped
+  if (overlay) {
+    overlay.addEventListener("click", closeSidebar);
+    overlay.addEventListener("touchend", function(e){ e.preventDefault(); closeSidebar(); });
+  }
+
+  // Close when a nav link inside sidebar is tapped (navigate away)
+  sidebar.querySelectorAll("a").forEach(function (link) {
+    link.addEventListener("click", function () {
+      closeSidebar();
+    });
+  });
+
+  // Reset on page show (back/forward cache)
+  window.addEventListener("pageshow", function () {
+    closeSidebar();
+  });
+})();
+</script>
+{% if user.is_authenticated %}
+<script>
+// ── Sitewide location monitoring (geofence.js) ────────────────────────────
+// Runs on EVERY authenticated page so location on/off is detected immediately,
+// regardless of which page the user is on.
+// portalCheckedIn=false means no geofence ping loop; only location alive-check.
+if (typeof window.portalCheckedIn === 'undefined') {
+  window.portalCheckedIn  = false;
+}
+if (typeof window.geofencePingUrl === 'undefined') {
+  window.geofencePingUrl  = "{% url 'attendance:geofence_ping' %}";
+}
+if (typeof window.locationStatusUrl === 'undefined') {
+  window.locationStatusUrl = "{% url 'attendance:location_status' %}";
+}
+if (typeof window.csrfToken === 'undefined') {
+  window.csrfToken = "{{ csrf_token }}";
+}
+</script>
+<script src="{% static 'js/geofence.js' %}"></script>
+{% endif %}
+
+{% if user.is_authenticated %}
+<script>
+// ── PWA Install Prompt (Android / Chrome / Edge / Samsung) ────────────────
+(function () {
+  'use strict';
+
+  var banner   = document.getElementById('pwaInstallBanner');
+  var installBtn = document.getElementById('pwaInstallBtn');
+  var dismissBtn = document.getElementById('pwaInstallDismiss');
+  var iosModal   = document.getElementById('iosInstallModal');
+  var iosClose   = document.getElementById('iosModalClose');
+
+  // Don't show if already running as installed PWA
+  function isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.navigator.standalone === true;
+  }
+
+  // Don't show if user already dismissed recently (7 days)
+  function wasDismissed() {
+    try {
+      var t = localStorage.getItem('pwaInstallDismissed');
+      return t && (Date.now() - parseInt(t, 10)) < 7 * 24 * 60 * 60 * 1000;
+    } catch (e) { return false; }
+  }
+
+  if (isStandalone() || wasDismissed()) return;
+
+  // ── Android / Chrome / Edge: use beforeinstallprompt ───────────────────
+  var deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (banner) banner.style.display = '';
+  });
+
+  if (installBtn) {
+    installBtn.addEventListener('click', function () {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function () {
+        deferredPrompt = null;
+        if (banner) banner.style.display = 'none';
+      });
+    });
+  }
+
+  if (dismissBtn) {
+    dismissBtn.addEventListener('click', function () {
+      if (banner) banner.style.display = 'none';
+      try { localStorage.setItem('pwaInstallDismissed', Date.now().toString()); } catch (e) {}
+    });
+  }
+
+  // ── iOS / Safari: show manual instructions ─────────────────────────────
+  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+  if (isIOS && isSafari && !isStandalone() && !wasDismissed()) {
+    // Show "Install" option in the topbar for iOS
+    var iosBtn = document.createElement('button');
+    iosBtn.className = 'btn btn-sm btn-outline-primary d-flex align-items-center gap-1';
+    iosBtn.style.cssText = 'font-size:.75rem;padding:4px 10px;border-radius:8px';
+    iosBtn.innerHTML = '<i class="bi bi-download"></i><span class="d-none d-sm-inline">Install</span>';
+    iosBtn.title = 'Install as app on your iPhone/iPad';
+    iosBtn.addEventListener('click', function () {
+      if (iosModal) iosModal.style.display = '';
+    });
+    // Insert before the push button in the topbar
+    var pushBtn = document.getElementById('pushSubscribeBtn');
+    if (pushBtn && pushBtn.parentNode) pushBtn.parentNode.insertBefore(iosBtn, pushBtn);
+  }
+
+  if (iosClose) {
+    iosClose.addEventListener('click', function () {
+      if (iosModal) iosModal.style.display = 'none';
+      try { localStorage.setItem('pwaInstallDismissed', Date.now().toString()); } catch (e) {}
+    });
+  }
+
+  // Close iOS modal on backdrop tap
+  if (iosModal) {
+    iosModal.addEventListener('click', function (e) {
+      if (e.target === iosModal) {
+        iosModal.style.display = 'none';
+        try { localStorage.setItem('pwaInstallDismissed', Date.now().toString()); } catch (e) {}
+      }
+    });
+  }
+
+  // Track successful install
+  window.addEventListener('appinstalled', function () {
+    if (banner) banner.style.display = 'none';
+    try { localStorage.removeItem('pwaInstallDismissed'); } catch (e) {}
+  });
+})();
+</script>
+
+<script>
+// ── Web Push Notification Setup ────────────────────────────────────────────
+(function () {
+  'use strict';
+
+  var VAPID_KEY_URL   = "{% url 'communication:push_vapid_key' %}";
+  var SUBSCRIBE_URL   = "{% url 'communication:push_subscribe' %}";
+  var UNSUBSCRIBE_URL = "{% url 'communication:push_unsubscribe' %}";
+  var SW_URL          = "{% static 'sw.js' %}";
+  var CSRF            = "{{ csrf_token }}";
+
+  var btn      = document.getElementById('pushSubscribeBtn');
+  var bellIcon = document.getElementById('pushBellIcon');
+
+  // Only run if browser supports service workers + push
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  if (!btn) return;
+
+  // Show the button
+  btn.style.display = '';
+  btn.style.removeProperty('display');
+
+  function urlBase64ToUint8Array(base64String) {
+    var padding = '='.repeat((4 - base64String.length % 4) % 4);
+    var base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    var rawData = atob(base64);
+    return Uint8Array.from([...rawData].map(function (c) { return c.charCodeAt(0); }));
+  }
+
+  function setSubscribedState(subscribed) {
+    if (subscribed) {
+      bellIcon.className = 'bi bi-bell-fill text-warning';
+      btn.title = 'Push notifications enabled — click to disable';
+      btn.classList.remove('btn-outline-secondary');
+      btn.classList.add('btn-outline-warning');
+    } else {
+      bellIcon.className = 'bi bi-bell-slash';
+      btn.title = 'Enable push notifications';
+      btn.classList.remove('btn-outline-warning');
+      btn.classList.add('btn-outline-secondary');
+    }
+  }
+
+  var swReg = null;
+
+  navigator.serviceWorker.register(SW_URL, { scope: '/' })
+    .then(function (reg) {
+      swReg = reg;
+      return reg.pushManager.getSubscription();
+    })
+    .then(function (sub) {
+      setSubscribedState(!!sub);
+    })
+    .catch(function (err) {
+      console.warn('[Push] SW registration failed:', err);
+    });
+
+  btn.addEventListener('click', function () {
+    if (!swReg) return;
+
+    swReg.pushManager.getSubscription().then(function (existing) {
+      if (existing) {
+        // Unsubscribe
+        existing.unsubscribe().then(function () {
+          fetch(UNSUBSCRIBE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+            body: JSON.stringify({ endpoint: existing.endpoint }),
+          });
+          setSubscribedState(false);
+        });
+      } else {
+        // Subscribe — fetch VAPID key first
+        fetch(VAPID_KEY_URL, { credentials: 'same-origin' })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            var appKey = urlBase64ToUint8Array(data.publicKey);
+            return swReg.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: appKey,
+            });
+          })
+          .then(function (sub) {
+            var key  = sub.getKey ? sub.getKey('p256dh') : null;
+            var auth = sub.getKey ? sub.getKey('auth')   : null;
+            var p256 = key  ? btoa(String.fromCharCode.apply(null, new Uint8Array(key)))  : '';
+            var au   = auth ? btoa(String.fromCharCode.apply(null, new Uint8Array(auth))) : '';
+            return fetch(SUBSCRIBE_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+              body: JSON.stringify({ endpoint: sub.endpoint, keys: { p256dh: p256, auth: au } }),
+            });
+          })
+          .then(function () { setSubscribedState(true); })
+          .catch(function (err) { console.warn('[Push] Subscribe failed:', err); });
+      }
+    });
+  });
+})();
+</script>
+{% endif %}
+</body>
+</html>

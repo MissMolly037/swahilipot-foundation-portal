@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-image me-2"></i>Branding & Logo Settings</h1>
+  <a href="{% url 'dashboard:home' %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+</div>
+
+<div style="max-width:640px;margin:0 auto;">
+
+  <!-- Current Logo Preview -->
+  <div class="panel mb-4">
+    <h2 class="mb-3"><i class="bi bi-eye me-2"></i>Current Logo</h2>
+    <div class="d-flex align-items-center gap-4">
+      <div style="width:96px;height:96px;border-radius:16px;background:linear-gradient(135deg,#1e40af,#3b82f6);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;box-shadow:0 4px 16px rgba(30,64,175,.3)">
+        {% if obj.logo %}
+          <img src="{{ obj.logo.url }}" alt="Logo" style="width:100%;height:100%;object-fit:contain;padding:8px">
+        {% else %}
+          <img src="https://swahilipothub.co.ke/wp-content/uploads/2021/06/Swahilipot-logo-Trans.png"
+               onerror="this.src='{% static 'images/swahilipot-logo.jfif' %}';this.onerror=null;"
+               alt="Default Logo" style="width:100%;height:100%;object-fit:contain;padding:8px">
+        {% endif %}
+      </div>
+      <div>
+        <div class="fw-bold fs-5">{{ obj.site_name }}</div>
+        <div class="text-muted small">{{ obj.tagline }}</div>
+        {% if obj.logo %}
+          <span class="badge bg-success mt-2"><i class="bi bi-check-circle me-1"></i>Custom logo active</span>
+        {% else %}
+          <span class="badge bg-secondary mt-2"><i class="bi bi-info-circle me-1"></i>Using default logo</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload New Logo -->
+  <div class="panel mb-4">
+    <h2 class="mb-1"><i class="bi bi-upload me-2"></i>Upload New Logo</h2>
+    <p class="text-muted small mb-3">PNG or JPG, square recommended (e.g. 256×256 px). Max 2 MB.</p>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="upload">
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Logo Image</label>
+        <input type="file" name="logo" accept="image/*" class="form-control" id="logoInput">
+        <div class="form-text">Supported: PNG, JPG, JPEG, WebP, GIF</div>
+      </div>
+      <!-- Live preview -->
+      <div id="previewWrap" style="display:none;margin-bottom:1rem;">
+        <p class="text-muted small mb-2">Preview:</p>
+        <div style="width:80px;height:80px;border-radius:12px;background:#f0f4ff;overflow:hidden;border:2px solid #e0e7ff">
+          <img id="previewImg" src="" alt="preview" style="width:100%;height:100%;object-fit:contain;padding:6px">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Site Name <small class="text-muted">(shown in sidebar)</small></label>
+        <input type="text" name="site_name" value="{{ obj.site_name }}" class="form-control" maxlength="100">
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Tagline <small class="text-muted">(sub-text under name)</small></label>
+        <input type="text" name="tagline" value="{{ obj.tagline }}" class="form-control" maxlength="200">
+      </div>
+      <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Save Changes</button>
+    </form>
+  </div>
+
+  <!-- Remove Logo -->
+  {% if obj.logo %}
+  <div class="panel border border-danger border-opacity-25">
+    <h2 class="text-danger mb-2"><i class="bi bi-trash me-2"></i>Remove Custom Logo</h2>
+    <p class="text-muted small mb-3">This will revert to the default Swahilipot Hub logo from the website.</p>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="remove">
+      <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Remove the custom logo?')">
+        <i class="bi bi-x-circle me-1"></i>Remove Custom Logo
+      </button>
+    </form>
+  </div>
+  {% endif %}
+
+  <!-- How To Install Section -->
+  <div class="panel mt-4" style="border:2px solid #e0e7ff">
+    <h2 class="mb-3"><i class="bi bi-phone me-2"></i>How to Install on Mobile / Desktop</h2>
+    <p class="text-muted small mb-3">Staff can install this portal as an app on their phone or computer — no app store needed.</p>
+
+    <div class="mb-3">
+      <div class="fw-semibold mb-1"><i class="bi bi-android2 text-success me-1"></i>Android (Chrome)</div>
+      <ol class="small text-muted ps-3 mb-0">
+        <li>Open the portal in <strong>Chrome</strong></li>
+        <li>Tap the <strong>⋮ menu</strong> (top-right)</li>
+        <li>Tap <strong>"Add to Home screen"</strong></li>
+        <li>Tap <strong>"Add"</strong> — icon appears on home screen</li>
+      </ol>
+    </div>
+
+    <div class="mb-3">
+      <div class="fw-semibold mb-1"><i class="bi bi-apple text-secondary me-1"></i>iPhone / iPad (Safari)</div>
+      <ol class="small text-muted ps-3 mb-0">
+        <li>Open the portal in <strong>Safari</strong></li>
+        <li>Tap the <strong>Share button</strong> <i class="bi bi-box-arrow-up"></i></li>
+        <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+        <li>Tap <strong>"Add"</strong></li>
+      </ol>
+    </div>
+
+    <div class="mb-3">
+      <div class="fw-semibold mb-1"><i class="bi bi-laptop text-primary me-1"></i>Desktop (Chrome / Edge)</div>
+      <ol class="small text-muted ps-3 mb-0">
+        <li>Open the portal in <strong>Chrome or Edge</strong></li>
+        <li>Click the <strong>install icon</strong> <i class="bi bi-plus-square"></i> in the address bar</li>
+        <li>Click <strong>"Install"</strong></li>
+        <li>The portal opens in its own window like a native app</li>
+      </ol>
+    </div>
+
+    <div class="alert alert-info py-2 px-3 mb-0 mt-2">
+      <i class="bi bi-info-circle me-1"></i>
+      <strong>Mobile GPS Check-in:</strong> Share the link <code>/attendance/mobile/</code> with staff for a simplified mobile check-in screen.
+    </div>
+  </div>
+
+</div>
+
+<script>
+document.getElementById("logoInput").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    document.getElementById("previewImg").src = ev.target.result;
+    document.getElementById("previewWrap").style.display = "block";
+  };
+  reader.readAsDataURL(file);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,396 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1e40af">
+  <title>Check In — Swahilipot</title>
+  <link rel="manifest" href="{% static 'manifest.json' %}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--blue:#1e40af;--blue2:#3b82f6;--green:#16a34a;--orange:#d97706;--red:#dc2626;--bg:#f0f4ff;--card:#fff;--ink:#1e293b;--muted:#64748b}
+    html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+    body{display:flex;flex-direction:column;min-height:100dvh}
+
+    /* ── Top bar ── */
+    .topbar{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;padding:env(safe-area-inset-top,0) 0 0;display:flex;flex-direction:column;align-items:center;padding-bottom:24px}
+    .topbar-inner{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px 0}
+    .logo-wrap{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .logo-wrap img{width:100%;height:100%;object-fit:contain;padding:4px}
+    .portal-title{font-size:.85rem;font-weight:700;letter-spacing:.3px;opacity:.95}
+    .portal-sub{font-size:.7rem;opacity:.65}
+    .back-btn{color:#fff;text-decoration:none;opacity:.85;font-size:.85rem;display:flex;align-items:center;gap:4px}
+    .back-btn:hover{opacity:1;color:#fff}
+
+    /* ── Status hero ── */
+    .status-hero{margin-top:20px;text-align:center;padding:0 16px}
+    .status-icon{width:80px;height:80px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:2.2rem}
+    .status-icon.out{background:rgba(255,255,255,.15);border:3px solid rgba(255,255,255,.4)}
+    .status-icon.in{background:rgba(22,163,74,.25);border:3px solid rgba(22,163,74,.5)}
+    .status-icon.done{background:rgba(255,255,255,.15);border:3px solid rgba(255,255,255,.4)}
+    .status-label{font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:4px}
+    .status-sub{font-size:.82rem;color:rgba(255,255,255,.7)}
+
+    /* ── Main content ── */
+    .content{flex:1;padding:20px 16px;display:flex;flex-direction:column;gap:16px;max-width:480px;margin:0 auto;width:100%}
+
+    /* ── GPS card ── */
+    .gps-card{background:var(--card);border-radius:20px;padding:20px;box-shadow:0 2px 20px rgba(0,0,0,.08)}
+    .gps-card h3{font-size:1rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .gps-status{padding:12px 14px;border-radius:12px;font-size:.85rem;display:flex;align-items:center;gap:10px;margin-bottom:14px;transition:all .3s}
+    .gps-status.waiting{background:#f0f9ff;border:1px solid #bae6fd;color:#0369a1}
+    .gps-status.ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+    .gps-status.error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+    .gps-icon{font-size:1.4rem;flex-shrink:0}
+    .gps-detail{font-size:.75rem;opacity:.75;margin-top:2px}
+
+    /* ── Big action buttons ── */
+    .btn-checkin{width:100%;padding:18px;border:none;border-radius:16px;font-size:1.15rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:all .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+    .btn-checkin:active{transform:scale(.97)}
+    .btn-in{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;box-shadow:0 4px 20px rgba(22,163,74,.4)}
+    .btn-out{background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;box-shadow:0 4px 20px rgba(217,119,6,.4)}
+    .btn-in:disabled,.btn-out:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+    /* ── Site picker ── */
+    .site-list{display:flex;flex-direction:column;gap:10px}
+    .site-btn{width:100%;padding:14px 16px;background:var(--card);border:2px solid #e2e8f0;border-radius:14px;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+    .site-btn:active{background:#f0f4ff;border-color:var(--blue2)}
+    .site-btn.selected{border-color:var(--blue);background:#eff6ff}
+    .site-btn-name{font-weight:600;font-size:.95rem;color:var(--ink)}
+    .site-btn-meta{font-size:.75rem;color:var(--muted);margin-top:3px}
+    .site-check{color:var(--blue);font-size:1.2rem;display:none}
+    .site-btn.selected .site-check{display:block}
+
+    /* ── Info card ── */
+    .info-card{background:var(--card);border-radius:16px;padding:16px;box-shadow:0 1px 8px rgba(0,0,0,.06)}
+    .info-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9}
+    .info-row:last-child{border:none}
+    .info-label{font-size:.8rem;color:var(--muted)}
+    .info-value{font-size:.9rem;font-weight:600}
+
+    /* ── Toast ── */
+    .toast-wrap{position:fixed;bottom:env(safe-area-inset-bottom,20px);left:50%;transform:translateX(-50%);z-index:999;width:calc(100% - 32px);max-width:420px}
+    .toast{padding:14px 16px;border-radius:14px;font-size:.9rem;font-weight:500;text-align:center;margin-top:8px;box-shadow:0 4px 20px rgba(0,0,0,.15);display:flex;align-items:center;gap:10px;justify-content:center;animation:slideUp .3s ease}
+    .toast.success{background:#16a34a;color:#fff}
+    .toast.error{background:#dc2626;color:#fff}
+    .toast.info{background:#1e40af;color:#fff}
+    @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+    /* ── Loading spinner ── */
+    .spinner{width:20px;height:20px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* ── Already done ── */
+    .done-card{background:#f0fdf4;border:2px solid #bbf7d0;border-radius:20px;padding:24px;text-align:center}
+    .done-card .bi{font-size:3rem;color:#16a34a;display:block;margin-bottom:12px}
+    .done-card h3{font-size:1.1rem;font-weight:700;color:#166534;margin-bottom:6px}
+    .done-card p{font-size:.85rem;color:#4ade80;margin-bottom:16px}
+
+    /* Safe area padding at bottom */
+    .safe-bottom{height:env(safe-area-inset-bottom,0)}
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="logo-wrap">
+        {% if site_settings and site_settings.logo %}
+          <img src="{{ site_settings.logo.url }}" alt="Logo">
+        {% else %}
+          <img src="https://swahilipothub.co.ke/wp-content/uploads/2021/06/Swahilipot-logo-Trans.png"
+               onerror="this.src='{% static 'images/swahilipot-logo.jfif' %}';this.onerror=null;" alt="SPH">
+        {% endif %}
+      </div>
+      <div>
+        <div class="portal-title">Swahilipot Hub</div>
+        <div class="portal-sub">Staff Portal</div>
+      </div>
+    </div>
+    <a href="{% url 'attendance:home' %}" class="back-btn"><i class="bi bi-arrow-left"></i> Full View</a>
+  </div>
+
+  <!-- Status hero -->
+  <div class="status-hero">
+    {% if already_done_today %}
+      <div class="status-icon done"><i class="bi bi-check-all"></i></div>
+      <div class="status-label">All Done Today!</div>
+      <div class="status-sub">You've checked in and out for today</div>
+    {% elif current %}
+      <div class="status-icon in"><i class="bi bi-geo-alt-fill"></i></div>
+      <div class="status-label">Checked In</div>
+      <div class="status-sub">Since {{ current.check_in_time|date:"H:i" }} · {{ current.project_site.name }}</div>
+    {% else %}
+      <div class="status-icon out"><i class="bi bi-geo-alt"></i></div>
+      <div class="status-label">Not Checked In</div>
+      <div class="status-sub">{{ user.get_full_name|default:user.username }}</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Main content -->
+<div class="content">
+
+  {% if already_done_today %}
+  <!-- Completed today -->
+  <div class="done-card">
+    <i class="bi bi-patch-check-fill"></i>
+    <h3>Attendance Complete</h3>
+    <p>You have successfully checked in and out today. See you tomorrow!</p>
+    <a href="{% url 'dashboard:home' %}" class="btn-checkin btn-in" style="text-decoration:none;display:flex;width:auto;padding:12px 24px;border-radius:12px;font-size:.95rem">
+      <i class="bi bi-house-fill"></i> Go to Dashboard
+    </a>
+  </div>
+
+  {% elif current %}
+  <!-- Checked in — show check-out -->
+
+  <!-- GPS Status -->
+  <div class="gps-card">
+    <h3><i class="bi bi-broadcast text-primary"></i> Live Location</h3>
+    <div class="gps-status waiting" id="gpsStatus">
+      <span class="gps-icon">📡</span>
+      <div>
+        <div id="gpsText">Acquiring GPS signal…</div>
+        <div class="gps-detail" id="gpsDetail">Please wait</div>
+      </div>
+    </div>
+
+    <!-- Info rows -->
+    <div class="info-card">
+      <div class="info-row">
+        <span class="info-label">Checked in at</span>
+        <span class="info-value">{{ current.check_in_time|date:"H:i" }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Site</span>
+        <span class="info-value">{{ current.project_site.name }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Arrival</span>
+        <span class="info-value">{{ current.get_arrival_status_display }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Duration</span>
+        <span class="info-value" id="duration">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Check-out form -->
+  <form method="post" action="{{ check_out_url }}" id="checkoutForm" data-action="checkout">
+    {% csrf_token %}
+    <input type="hidden" name="latitude" id="co_lat">
+    <input type="hidden" name="longitude" id="co_lng">
+    <button type="submit" class="btn-checkin btn-out" id="checkoutBtn" disabled>
+      <span id="checkoutContent"><i class="bi bi-box-arrow-right"></i> Check Out</span>
+    </button>
+  </form>
+  <p style="text-align:center;font-size:.78rem;color:var(--muted)">GPS location will be recorded automatically</p>
+
+  {% else %}
+  <!-- Not checked in — show GPS + site selection + check-in -->
+
+  <!-- GPS Status -->
+  <div class="gps-card">
+    <h3><i class="bi bi-geo-alt text-primary"></i> GPS Location</h3>
+    <div class="gps-status waiting" id="gpsStatus">
+      <span class="gps-icon">📡</span>
+      <div>
+        <div id="gpsText">Requesting location access…</div>
+        <div class="gps-detail" id="gpsDetail">Allow location in your browser</div>
+      </div>
+    </div>
+  </div>
+
+  {% if sites|length > 1 %}
+  <!-- Site picker -->
+  <div class="gps-card">
+    <h3><i class="bi bi-pin-map text-primary"></i> Select Site</h3>
+    <div class="site-list">
+      {% for s in sites %}
+      <button class="site-btn {% if forloop.first %}selected{% endif %}" data-site-id="{{ s.pk }}" onclick="selectSite(this, {{ s.pk }})">
+        <div>
+          <div class="site-btn-name">{{ s.name }}</div>
+          <div class="site-btn-meta">In: {{ s.expected_check_in_time }} · Out: {{ s.expected_check_out_time }}</div>
+        </div>
+        <i class="bi bi-check-circle-fill site-check"></i>
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+  {% elif sites %}
+  <div class="info-card">
+    <div class="info-row">
+      <span class="info-label">Site</span>
+      <span class="info-value">{{ sites.0.name }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Check-in time</span>
+      <span class="info-value">{{ sites.0.expected_check_in_time }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Check-out time</span>
+      <span class="info-value">{{ sites.0.expected_check_out_time }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Radius</span>
+      <span class="info-value">{{ sites.0.radius_meters }} m</span>
+    </div>
+  </div>
+  {% else %}
+  <div class="gps-card" style="text-align:center;color:var(--muted)">
+    <i class="bi bi-exclamation-triangle" style="font-size:2rem;color:#d97706;display:block;margin-bottom:8px"></i>
+    <div style="font-weight:600">No active site configured</div>
+    <div style="font-size:.8rem;margin-top:4px">Contact your admin to add a project site.</div>
+  </div>
+  {% endif %}
+
+  <!-- Check-in form -->
+  {% if sites %}
+  <form method="post" action="{{ check_in_url }}" id="checkinForm" data-action="checkin">
+    {% csrf_token %}
+    <input type="hidden" name="latitude" id="ci_lat">
+    <input type="hidden" name="longitude" id="ci_lng">
+    <input type="hidden" name="site_id" id="ci_site_id" value="{% if sites|length == 1 %}{{ sites.0.pk }}{% endif %}">
+    <button type="submit" class="btn-checkin btn-in" id="checkinBtn" disabled>
+      <span id="checkinContent"><i class="bi bi-geo-alt-fill"></i> Check In</span>
+    </button>
+  </form>
+  <p style="text-align:center;font-size:.78rem;color:var(--muted)">Your GPS coordinates will be captured automatically</p>
+  {% endif %}
+
+  {% endif %}
+
+  <!-- Link to full portal -->
+  <a href="{% url 'attendance:home' %}" style="text-align:center;display:block;color:var(--muted);font-size:.82rem;text-decoration:none;padding:8px">
+    <i class="bi bi-grid-3x3-gap"></i> Open full portal
+  </a>
+
+</div>
+
+<!-- Toast container -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- Safe area -->
+<div class="safe-bottom"></div>
+
+<script>
+var lat = null, lng = null;
+var selectedSiteId = null;
+
+// Initialize selectedSiteId from first site button if present
+(function(){
+  const first = document.querySelector(".site-btn.selected");
+  if (first) selectedSiteId = first.dataset.siteId;
+})();
+
+function selectSite(btn, id) {
+  document.querySelectorAll(".site-btn").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  selectedSiteId = String(id);
+  const ciSite = document.getElementById("ci_site_id");
+  if (ciSite) ciSite.value = id;
+  updateButtonState();
+}
+
+function toast(msg, type) {
+  const wrap = document.getElementById("toastWrap");
+  const el = document.createElement("div");
+  el.className = "toast " + type;
+  el.innerHTML = msg;
+  wrap.appendChild(el);
+  setTimeout(() => { if (wrap.contains(el)) wrap.removeChild(el); }, 3500);
+}
+
+function updateButtonState() {
+  const hasGps = lat !== null && lng !== null;
+  const btn = document.getElementById("checkinBtn") || document.getElementById("checkoutBtn");
+  if (!btn) return;
+  btn.disabled = !hasGps;
+}
+
+function setGpsStatus(type, text, detail) {
+  const box = document.getElementById("gpsStatus");
+  const t = document.getElementById("gpsText");
+  const d = document.getElementById("gpsDetail");
+  if (!box) return;
+  box.className = "gps-status " + type;
+  const icons = {waiting:"📡", ok:"📍", error:"❌"};
+  box.querySelector(".gps-icon").textContent = icons[type] || "📡";
+  if (t) t.textContent = text;
+  if (d) d.textContent = detail || "";
+}
+
+// Duration counter (for checked-in state)
+(function(){
+  const el = document.getElementById("duration");
+  const checkinRaw = "{{ current.check_in_time|date:'c' }}";
+  if (!el || !checkinRaw) return;
+  function tick() {
+    const diff = Math.floor((Date.now() - new Date(checkinRaw).getTime()) / 1000);
+    const h = Math.floor(diff / 3600), m = Math.floor((diff % 3600) / 60), s = diff % 60;
+    el.textContent = h + "h " + String(m).padStart(2,"0") + "m";
+  }
+  tick(); setInterval(tick, 30000);
+})();
+
+// GPS acquisition
+function startGps() {
+  if (!navigator.geolocation) {
+    setGpsStatus("error", "GPS not available", "Your browser does not support geolocation");
+    return;
+  }
+  setGpsStatus("waiting", "Acquiring GPS signal…", "Please wait — may take up to 30 seconds");
+  navigator.geolocation.watchPosition(
+    function(pos) {
+      lat = pos.coords.latitude;
+      lng = pos.coords.longitude;
+      const acc = Math.round(pos.coords.accuracy);
+      setGpsStatus("ok", "Location found ✓", "Accuracy: ±" + acc + " m · " + lat.toFixed(5) + ", " + lng.toFixed(5));
+
+      // Fill hidden fields
+      ["ci_lat","co_lat"].forEach(id => { const el = document.getElementById(id); if(el) el.value = lat; });
+      ["ci_lng","co_lng"].forEach(id => { const el = document.getElementById(id); if(el) el.value = lng; });
+
+      updateButtonState();
+    },
+    function(err) {
+      const msgs = {1:"Location access denied. Please allow in browser settings.", 2:"Could not detect position.", 3:"GPS timed out — try again."};
+      setGpsStatus("error", "GPS Error", msgs[err.code] || "Unknown error");
+      toast('<i class="bi bi-exclamation-triangle me-2"></i>' + (msgs[err.code] || "GPS error"), "error");
+    },
+    {enableHighAccuracy: true, timeout: 30000, maximumAge: 15000}
+  );
+}
+
+// Form submission with spinner
+["checkinForm","checkoutForm"].forEach(function(id) {
+  const form = document.getElementById(id);
+  if (!form) return;
+  form.addEventListener("submit", function(e) {
+    if (!lat || !lng) {
+      e.preventDefault();
+      toast('<i class="bi bi-geo-alt-slash me-2"></i>Waiting for GPS — please try again in a moment', "error");
+      return;
+    }
+    const action = form.dataset.action;
+    const btnId = action === "checkin" ? "checkinBtn" : "checkoutBtn";
+    const contentId = action === "checkin" ? "checkinContent" : "checkoutContent";
+    const btn = document.getElementById(btnId);
+    const content = document.getElementById(contentId);
+    if (btn) btn.disabled = true;
+    if (content) content.innerHTML = '<span class="spinner"></span> Processing…';
+  });
+});
+
+startGps();
+</script>
+</body>
+</html>
