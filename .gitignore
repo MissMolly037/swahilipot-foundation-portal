@@ -6,11 +6,16 @@ __pycache__/
 *.pyo
 *.pyd
 *.so
+*.egg
+*.egg-info/
 
-# Virtual environments
+# ===============================
+# Virtual Environments
+# ===============================
 venv/
 .venv/
 env/
+ENV/
 
 # ===============================
 # Environment Variables
@@ -22,7 +27,9 @@ env/
 # Django
 # ===============================
 db.sqlite3
+local_settings.py
 media/
+instance/
 
 # Static collected files
 staticfiles/
@@ -31,15 +38,25 @@ staticfiles/
 # Logs
 # ===============================
 *.log
+*.pid
 
 # ===============================
-# IDEs
+# Testing & Coverage
+# ===============================
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ===============================
+# IDEs & Editors
 # ===============================
 .vscode/
 .idea/
+*.code-workspace
 
 # ===============================
-# OS Files
+# Operating System Files
 # ===============================
 .DS_Store
 Thumbs.db
@@ -51,19 +68,19 @@ Thumbs.db
 .replit-artifact/
 
 # ===============================
-# Python cache
-# ===============================
-.pytest_cache/
-.mypy_cache/
-.coverage
-htmlcov/
-
-# ===============================
-# Node (if added later)
+# Node.js (if used later)
 # ===============================
 node_modules/
 
 # ===============================
-# Secrets
+# Build & Distribution
+# ===============================
+build/
+dist/
+
+# ===============================
+# Secrets & Certificates
 # ===============================
 *.pem
+*.key
+*.crt

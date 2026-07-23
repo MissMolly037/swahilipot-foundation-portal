@@ -1,58 +1,81 @@
 # Code of Conduct
 
-## Our Commitment
+## Our Pledge
 
-We are committed to providing a welcoming, respectful, inclusive, and harassment-free environment for everyone participating in the Swahilipot Foundation Portal project.
+We, as contributors and maintainers of the **Swahilipot Foundation Portal**, are committed to fostering an open, welcoming, inclusive, and harassment-free environment for everyone, regardless of age, experience level, education, nationality, ethnicity, religion, gender identity, sexual orientation, disability, or any other personal characteristic.
 
-We expect all contributors, maintainers, users, and community members to interact professionally and respectfully.
+We pledge to act and interact in ways that contribute to a positive, respectful, and collaborative community.
+
+---
 
 ## Expected Behavior
 
-Examples of positive behavior include:
+Examples of behavior that contributes to a positive environment include:
 
-- Being respectful and considerate of others.
-- Using welcoming and inclusive language.
-- Accepting constructive criticism gracefully.
-- Focusing on what is best for the project and its community.
-- Respecting different viewpoints and experiences.
-- Providing helpful and constructive feedback.
+* Treating everyone with kindness, courtesy, and respect.
+* Using welcoming and inclusive language.
+* Being open to constructive feedback and differing opinions.
+* Accepting responsibility for mistakes and learning from them.
+* Focusing on what is best for the project and the community.
+* Offering encouragement and support to new contributors.
+* Helping maintain a professional and collaborative atmosphere.
+
+---
 
 ## Unacceptable Behavior
 
-The following behavior is not acceptable:
+The following behaviors are unacceptable and will not be tolerated:
 
-- Harassment, discrimination, or intimidation.
-- Personal attacks or insulting comments.
-- Trolling or deliberately disruptive behavior.
-- Publishing private or confidential information without permission.
-- Unwelcome sexual attention or inappropriate conduct.
-- Any other behavior that would reasonably be considered inappropriate in a professional environment.
+* Harassment, discrimination, or intimidation of any kind.
+* Personal attacks, insults, or abusive language.
+* Trolling or deliberately disruptive behavior.
+* Publishing another person's private or confidential information without permission.
+* Unwelcome sexual language, attention, or conduct.
+* Spam, malicious activity, or intentionally misleading contributions.
+* Any conduct that could reasonably be considered inappropriate in a professional open-source community.
 
-## Reporting Issues
-
-If you experience or witness unacceptable behavior, please report it through the project's GitHub repository by opening an issue or contacting the project maintainers privately where appropriate.
-
-Reports will be reviewed and handled as respectfully and confidentially as possible.
-
-## Enforcement
-
-Project maintainers are responsible for clarifying and enforcing the standards described in this Code of Conduct.
-
-Maintainers may take appropriate action in response to unacceptable behavior, including:
-
-- Warning the individual involved.
-- Removing inappropriate content.
-- Temporarily restricting participation.
-- Permanently banning participation in the project.
+---
 
 ## Scope
 
-This Code of Conduct applies to all project spaces, including the GitHub repository, issue tracker, pull requests, discussions, and other project-related interactions.
+This Code of Conduct applies to all project spaces, including but not limited to:
+
+* GitHub repository
+* Issues
+* Pull Requests
+* Discussions
+* Project documentation
+* Community communications
+* Any official project events or online spaces
+
+---
+
+## Reporting Concerns
+
+If you experience or witness behavior that violates this Code of Conduct, please report it by opening a GitHub issue or contacting the project maintainers privately where appropriate.
+
+All reports will be reviewed fairly, respectfully, and confidentially to the extent possible.
+
+---
+
+## Enforcement
+
+Project maintainers are responsible for enforcing this Code of Conduct.
+
+Depending on the severity of the violation, maintainers may take one or more of the following actions:
+
+* Provide a private warning.
+* Request that inappropriate behavior stop immediately.
+* Remove offensive comments or content.
+* Temporarily suspend participation.
+* Permanently ban individuals from participating in the project.
+
+Enforcement decisions will be made fairly and with the goal of maintaining a healthy and productive community.
+
+---
 
 ## Acknowledgement
 
-By participating in the Swahilipot Foundation Portal project, contributors agree to follow this Code of Conduct and help maintain a respectful and welcoming community.
-
----
+By participating in the **Swahilipot Foundation Portal** project, you agree to follow this Code of Conduct and contribute to building a respectful, inclusive, and welcoming community.
 
 Thank you for helping make the Swahilipot Foundation Portal a positive environment for everyone.

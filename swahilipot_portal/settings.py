@@ -22,10 +22,47 @@ except ImportError:
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-change-me")
+# ------------------------------------------------------------------------------
+# Security Settings
+# ------------------------------------------------------------------------------
+
+# Debug mode
 DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() in {"1", "true", "yes"}
-ALLOWED_HOSTS = [h for h in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if h]
-ALLOWED_HOSTS += ["oppose-shrink-speed.ngrok-free.dev"]
+
+# Secret Key
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+
+if not SECRET_KEY:
+    if DEBUG:
+        # Development fallback only
+        SECRET_KEY = "dev-only-change-me"
+    else:
+        raise RuntimeError(
+            "DJANGO_SECRET_KEY environment variable must be set in production."
+        )
+
+# Allowed Hosts
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv(
+        "DJANGO_ALLOWED_HOSTS",
+        "127.0.0.1,localhost"
+    ).split(",")
+    if host.strip()
+]
+
+# Development tunnel
+ALLOWED_HOSTS.append("oppose-shrink-speed.ngrok-free.dev")
+
+# Local development
+ALLOWED_HOSTS.extend([
+    "127.0.0.1",
+    "localhost",
+    "0.0.0.0",
+])
+
+# Remove duplicate entries
+ALLOWED_HOSTS = list(dict.fromkeys(ALLOWED_HOSTS))
 
 # ── Replit hosting: automatically trust all *.replit.app / *.replit.dev domains
 _replit_domains = os.getenv("REPLIT_DOMAINS", "")
@@ -34,8 +71,7 @@ for _d in _replit_domains.split(","):
     if _d:
         ALLOWED_HOSTS.append(_d)
 
-ALLOWED_HOSTS.append("localhost")
-ALLOWED_HOSTS.append("0.0.0.0")
+ALLOWED_HOSTS = list(set(ALLOWED_HOSTS))
 
 INSTALLED_APPS = [
     "django.contrib.admin",

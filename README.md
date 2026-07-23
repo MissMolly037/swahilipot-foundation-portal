@@ -1,179 +1,184 @@
 # Swahilipot Foundation Portal
 
-A modern web-based management platform designed for **Swahilipot Foundation** to streamline organizational operations, member management, attendance tracking, communication, event coordination, and reporting.
+> A modern web-based portal designed to digitize and streamline operations at Swahilipot Foundation.
+
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![Django](https://img.shields.io/badge/Django-6.0-success)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5-purple)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
 ## 📖 Overview
 
-The **Swahilipot Foundation Portal** is built using **Django** and provides a centralized system that enables administrators, staff, and members to efficiently manage daily organizational activities through a secure and user-friendly interface.
+The Swahilipot Foundation Portal is a centralized management system developed using Django.
 
-The platform is designed to improve operational efficiency, transparency, collaboration, and digital transformation within the foundation.
+It helps manage:
+
+- Members
+- Programs
+- Events
+- Resources
+- Authentication
+- Reports
+- Administration
+
+The goal is to replace manual processes with a secure, scalable and user-friendly digital platform.
 
 ---
 
 ## ✨ Features
 
-- 🔐 Secure User Authentication
-- 👥 User & Role Management
-- 📅 Attendance Tracking
-- 🎉 Event Management
-- 📋 Task Management
-- 💬 Internal Communication
-- 💡 Suggestion Box
-- 📊 Dashboard & Reports
-- 📝 Google Forms Integration
-- 📧 Email Notifications
-- 📁 Document & Resource Management
-- 📱 Responsive User Interface
+- Secure Login System
+- Dashboard
+- User Management
+- Program Management
+- Event Management
+- Reports
+- Responsive Design
+- Role-Based Permissions
 
 ---
 
-## 🏗️ Project Structure
+## 🛠 Technology Stack
 
-```text
+Backend
+- Python
+- Django
+
+Frontend
+- HTML5
+- CSS3
+- Bootstrap 5
+- JavaScript
+
+Database
+- SQLite (Development)
+- PostgreSQL (Production Ready)
+
+Version Control
+- Git
+- GitHub
+
+---
+
+## 📂 Project Structure
+
+```
 swahilipot-foundation-portal/
 │
 ├── accounts/
-├── attendance/
-├── communication/
-├── core/
 ├── dashboard/
 ├── events/
-├── suggestions/
-├── tasks/
-├── static/
+├── programs/
 ├── templates/
-├── swahilipot_portal/
+├── static/
+├── media/
 ├── manage.py
-├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## 🛠️ Technology Stack
-
-### Backend
-
-- Python
-- Django
-
-### Frontend
-
-- HTML5
-- CSS3
-- JavaScript
-- Bootstrap
-
-### Database
-
-- SQLite (Development)
-
-### Deployment
-
-- PythonAnywhere
-
----
-
 ## 🚀 Installation
 
-### Clone the repository
+Clone the repository
 
 ```bash
 git clone https://github.com/MissMolly037/swahilipot-foundation-portal.git
 ```
 
-### Navigate into the project
+Move into the project
 
 ```bash
 cd swahilipot-foundation-portal
 ```
 
-### Create a virtual environment
+Create Virtual Environment
 
 ```bash
 python -m venv venv
 ```
 
-### Activate the virtual environment
+Activate Virtual Environment
 
-**Windows**
+Windows
 
 ```bash
 venv\Scripts\activate
 ```
 
-**Linux / macOS**
+Linux/Mac
 
 ```bash
 source venv/bin/activate
 ```
 
-### Install dependencies
+Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Apply migrations
+Run migrations
 
 ```bash
 python manage.py migrate
 ```
 
-### Start the development server
+Start the server
 
 ```bash
 python manage.py runserver
-```
-
-Open your browser and visit:
-
-```
-http://127.0.0.1:8000/
-```
-
----
-
-## ⚙️ Environment Variables
-
-Create a `.env` file using the provided `.env.example` file.
-
-Example:
-
-```env
-DJANGO_SECRET_KEY=your-secret-key
-DJANGO_DEBUG=True
-DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
 ```
 
 ---
 
 ## 📸 Screenshots
 
-Project screenshots will be added as the system continues to evolve.
+Coming Soon
 
 ---
 
-## 🗺️ Roadmap
+## 🧪 Running Tests
 
-- Docker Support
-- REST API
-- Progressive Web App (PWA)
-- Automated Testing
-- GitHub Actions (CI/CD)
-- Performance Optimization
-- Analytics Dashboard
-- Mobile Integration
+```bash
+python manage.py test
+```
+
+---
+
+## 🔒 Security
+
+- Authentication
+- CSRF Protection
+- Django Security Middleware
+- Role-Based Access Control
 
 ---
 
 ## 🤝 Contributing
 
-Contributions, bug reports, and feature suggestions are welcome.
+Contributions are welcome.
 
-Please fork the repository, create a feature branch, and submit a Pull Request.
+Fork the repository.
+
+Create a feature branch.
+
+Commit your changes.
+
+Submit a Pull Request.
+
+---
+
+## 📈 Future Improvements
+
+- Notifications
+- Analytics Dashboard
+- REST API
+- Mobile Support
+- Docker Deployment
+- CI/CD Pipeline
 
 ---
 
@@ -187,10 +192,7 @@ This project is licensed under the MIT License.
 
 **Margaret Wambui Njaaga**
 
-- GitHub: https://github.com/MissMolly037
+GitHub:
+https://github.com/MissMolly037
 
 ---
-
-## 🌍 About Swahilipot Foundation
-
-Swahilipot Foundation is a youth-focused innovation hub dedicated to empowering young people through technology, creativity, entrepreneurship, and community development. This portal supports the foundation's digital operations by providing a centralized platform for managing organizational activities efficiently.
