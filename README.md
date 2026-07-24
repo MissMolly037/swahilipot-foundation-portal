@@ -296,8 +296,6 @@ See the **LICENSE** file for more information.
 
 **Margaret Wambui Njaaga**
 
-Diploma in Information Technology Student
-
 GitHub:
 https://github.com/MissMolly037
 
