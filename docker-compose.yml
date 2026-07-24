@@ -25,7 +25,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-swahilipot}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-swahilipot}
 
-      DATABASE_URL: ${DATABASE_URL:-postgres://swahilipot:swahilipot@postgres:5432/swahilipot}
+      DATABASE_URL: postgres://swahilipot:swahilipot@postgres:5432/swahilipot
 
     depends_on:
       postgres:
@@ -44,15 +44,15 @@ services:
       - app-network
 
     healthcheck:
-  test:
-    [
-      "CMD-SHELL",
-      "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=5)\"",
-    ]
-  interval: 30s
-  timeout: 10s
-  retries: 3
-  start_period: 20s 
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=5)\"",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   postgres:
     image: postgres:16-alpine
@@ -71,8 +71,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-swahilipot} -d ${POSTGRES_DB:-swahilipot}"]
-
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-swahilipot} -d ${POSTGRES_DB:-swahilipot}"
+        ]
       interval: 10s
       timeout: 5s
       retries: 5

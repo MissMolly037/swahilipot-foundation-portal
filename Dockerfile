@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
     gcc \
+    passwd \
     && rm -rf /var/lib/apt/lists/*
 
 # =============================================================================
