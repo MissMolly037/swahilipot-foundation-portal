@@ -186,7 +186,7 @@
       box-shadow:0 4px 16px rgba(30,64,175,.14);
     }
     .brand-logo-box img{width:100%;height:100%;object-fit:contain}
-    .brand-words{}
+
     .brand-name{font-size:1rem;font-weight:800;color:var(--navy);line-height:1.2;margin-bottom:2px}
     .brand-tag{font-size:.67rem;color:#6b7280;margin-bottom:4px}
     .brand-loc{
@@ -445,11 +445,14 @@
 
     <!-- Swahilipot official logo — large and prominent -->
     <div class="hero-logo">
-      <img id="heroLogo"
+    <img
+        id="heroLogo"
         src="https://swahilipothub.co.ke/wp-content/uploads/2021/06/Swahilipot-logo-Trans.png"
         alt="Swahilipot Hub Foundation Logo"
-        onerror="this.src='{% static 'images/swahilipot-logo.jfif' %}';this.onerror=null">
-    </div>
+        class="img-fluid"
+        loading="lazy"
+        onerror="logoFallback(this)">
+</div>
 
     <div class="hero-title">Swahilipot<br><span>Hub Foundation</span></div>
     <div class="hero-sub">Empowering Youth Through Technology, Arts &amp; Entrepreneurship in Coastal Kenya</div>
@@ -502,7 +505,7 @@
       <img id="brandLogo"
         src="https://swahilipothub.co.ke/wp-content/uploads/2021/06/Swahilipot-logo-Trans.png"
         alt="Swahilipot Hub Logo"
-        onerror="this.src='{% static 'images/swahilipot-logo.jfif' %}';this.onerror=null">
+        onerror="logoFallback(this)">
     </div>
     <div class="brand-words">
       <div class="brand-name">Swahilipot Hub Foundation</div>
@@ -647,15 +650,29 @@
     </div>
   </div>
 
+  <!-- ================= Login Footer ================= -->
   <div class="login-footer">
-    <i class="bi bi-shield-check me-1"></i>
-    Secured portal &mdash; &copy; 2026 <strong>SAH-VisionDevs</strong>. All rights reserved.
-  </div>
+    <div class="small text-muted">
+      <i class="bi bi-shield-lock-fill me-1"></i>
+      <strong>Secure Portal</strong>
+    </div>
 
+    <div class="small text-muted mt-1">
+      &copy; 2026 <strong>Margaret Wambui Njaaga</strong>. All rights reserved.
+    </div>
+
+    <div class="small text-muted mt-1">
+      Developed for the <strong>Swahilipot Foundation Portal</strong>
+    </div>
+  </div>
+  <!-- =============== End Login Footer ============== -->
 </div>
 
 <script>
-// ── Slideshow ──────────────────────────────────────────────────────────────
+function logoFallback(img) {
+  img.src = "{% static 'images/swahilipot-logo.jfif' %}";
+  img.onerror = null;
+}
 const slides    = document.querySelectorAll('.slide');
 const dotsWrap  = document.getElementById('slideDots');
 const captionEl = document.getElementById('slideCaption');
@@ -839,7 +856,7 @@ setInterval(function() { goTo(current + 1); }, 5000);
       var p = a.play();
       if (p && typeof p.then === "function") {
         p.catch(function () {
-          setStatus("bi-info-circle", "Press \u25b6 to start audio");
+          setStatus("bi-info-circle", "Press ▶ to start audio");
         });
       }
     }
