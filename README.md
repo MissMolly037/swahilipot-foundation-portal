@@ -295,7 +295,9 @@ See the **LICENSE** file for more information.
 # 👩‍💻 Author
 
 **Margaret Wambui Njaaga**
-A software developer
+
+Aspiring Software Engineer
+
 GitHub:
 https://github.com/MissMolly037
 
