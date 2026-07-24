@@ -1,198 +1,310 @@
 # Swahilipot Foundation Portal
 
-> A modern web-based portal designed to digitize and streamline operations at Swahilipot Foundation.
+> A modern, secure, and scalable Django-based portal designed to digitize and streamline operations at the Swahilipot Foundation.
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue)
 ![Django](https://img.shields.io/badge/Django-6.0-success)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5-purple)
+![GitHub Actions](https://img.shields.io/badge/CI-GitHub%20Actions-success)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
-## 📖 Overview
+# 📖 Overview
 
-The Swahilipot Foundation Portal is a centralized management system developed using Django.
+The **Swahilipot Foundation Portal** is a comprehensive web application developed using **Django** to modernize the management of foundation activities.
 
-It helps manage:
+The system replaces manual workflows with a secure, centralized platform that enables efficient management of users, attendance, events, communication, tasks, and organizational resources.
 
-- Members
-- Programs
-- Events
-- Resources
-- Authentication
-- Reports
-- Administration
-
-The goal is to replace manual processes with a secure, scalable and user-friendly digital platform.
+The portal has been designed with scalability, security, and ease of use in mind, making it suitable for nonprofit organizations, training institutions, and community hubs.
 
 ---
 
-## ✨ Features
+# ✨ Features
 
-- Secure Login System
-- Dashboard
-- User Management
-- Program Management
-- Event Management
-- Reports
-- Responsive Design
-- Role-Based Permissions
+- 🔐 Secure Authentication & Authorization
+- 👥 User & Department Management
+- 📊 Interactive Dashboard
+- 📍 Attendance Tracking with Geofencing
+- 📅 Event Management
+- 🎫 QR Code Event Check-in
+- 📢 Internal Communication & Notifications
+- ✅ Task Management
+- 💡 Suggestions & Feedback Management
+- 📈 Reports & Analytics
+- 📱 Responsive Mobile-Friendly Design
+- 🌐 Progressive Web App (PWA) Support
+- 🔔 Push Notifications
+- 🔒 Role-Based Access Control
 
 ---
 
-## 🛠 Technology Stack
+# 🏗 System Modules
 
-Backend
-- Python
-- Django
+| Module | Description |
+|---------|-------------|
+| Accounts | User authentication, profiles and permissions |
+| Dashboard | Overview of system activities and reports |
+| Attendance | Check-in, check-out, geofencing and attendance reports |
+| Events | Event management, registrations and QR code check-in |
+| Communication | Notifications and internal messaging |
+| Tasks | Task assignment and tracking |
+| Suggestions | Suggestion and feedback management |
+| Core | Shared utilities, permissions and reporting |
 
-Frontend
+---
+
+# 🛠 Technology Stack
+
+## Backend
+
+- Python 3.12
+- Django 6
+- SQLite (Development)
+- PostgreSQL (Production Ready)
+
+## Frontend
+
 - HTML5
 - CSS3
 - Bootstrap 5
 - JavaScript
 
-Database
-- SQLite (Development)
-- PostgreSQL (Production Ready)
+## Additional Technologies
 
-Version Control
+- Progressive Web App (PWA)
+- Service Workers
+- Web Push Notifications
+- QR Code Generation
+- Google Forms Integration
+
+## Development Tools
+
 - Git
 - GitHub
+- GitHub Actions
+- Visual Studio Code
 
 ---
 
-## 📂 Project Structure
+# 📂 Project Structure
 
 ```
 swahilipot-foundation-portal/
 │
+├── .github/
+│   ├── ISSUE_TEMPLATE/
+│   └── workflows/
+│       └── django-tests.yml
+│
 ├── accounts/
+├── attendance/
+├── communication/
+├── core/
 ├── dashboard/
 ├── events/
-├── programs/
+├── suggestions/
+├── tasks/
+│
 ├── templates/
 ├── static/
 ├── media/
+│
 ├── manage.py
-└── README.md
+├── requirements.txt
+├── README.md
+├── LICENSE
+└── .gitignore
 ```
 
 ---
 
-## 🚀 Installation
+# 🚀 Installation
 
-Clone the repository
+## Clone the repository
 
 ```bash
 git clone https://github.com/MissMolly037/swahilipot-foundation-portal.git
 ```
 
-Move into the project
+## Navigate into the project
 
 ```bash
 cd swahilipot-foundation-portal
 ```
 
-Create Virtual Environment
+## Create a virtual environment
 
 ```bash
 python -m venv venv
 ```
 
-Activate Virtual Environment
-
-Windows
+### Windows
 
 ```bash
 venv\Scripts\activate
 ```
 
-Linux/Mac
+### Linux / macOS
 
 ```bash
 source venv/bin/activate
 ```
 
-Install dependencies
+## Install project dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Run migrations
+## Apply database migrations
 
 ```bash
 python manage.py migrate
 ```
 
-Start the server
+## Create a superuser (optional)
+
+```bash
+python manage.py createsuperuser
+```
+
+## Run the development server
 
 ```bash
 python manage.py runserver
 ```
 
+Visit:
+
+```
+http://127.0.0.1:8000/
+```
+
 ---
 
-## 📸 Screenshots
+# 🧪 Running Tests
 
-Coming Soon
-
----
-
-## 🧪 Running Tests
+Run all tests
 
 ```bash
 python manage.py test
 ```
 
+Run a specific test module
+
+```bash
+python manage.py test accounts.tests
+```
+
 ---
 
-## 🔒 Security
+# 🔒 Security Features
 
-- Authentication
-- CSRF Protection
-- Django Security Middleware
+- Django Authentication
 - Role-Based Access Control
+- CSRF Protection
+- Secure Password Hashing
+- Session Management
+- Environment Variable Configuration
+- Security Middleware
+- Protected Administrative Functions
 
 ---
 
-## 🤝 Contributing
+# 📸 Screenshots
+
+The following screenshots will be added in future releases:
+
+- Login Page
+- Dashboard
+- Attendance Management
+- Event Registration
+- QR Code Check-in
+- User Management
+- Reports Dashboard
+
+---
+
+# 📈 Roadmap
+
+Future enhancements include:
+
+- REST API
+- Docker Deployment
+- PostgreSQL Production Deployment
+- Email Notifications
+- SMS Notifications
+- Advanced Analytics Dashboard
+- Mobile Application
+- Calendar Integration
+- Multi-Organization Support
+
+---
+
+# 🤝 Contributing
 
 Contributions are welcome.
 
-Fork the repository.
+1. Fork the repository
 
-Create a feature branch.
+2. Create a feature branch
 
-Commit your changes.
+```bash
+git checkout -b feature/new-feature
+```
 
-Submit a Pull Request.
+3. Commit your changes
+
+```bash
+git commit -m "Add new feature"
+```
+
+4. Push to GitHub
+
+```bash
+git push origin feature/new-feature
+```
+
+5. Open a Pull Request
+
+Please ensure all tests pass before submitting a pull request.
 
 ---
 
-## 📈 Future Improvements
+# 📜 Project Documentation
 
-- Notifications
-- Analytics Dashboard
-- REST API
-- Mobile Support
-- Docker Deployment
-- CI/CD Pipeline
+Additional documentation included in this repository:
 
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
+- CONTRIBUTING.md
+- CHANGELOG.md
+- CODE_OF_CONDUCT.md
+- ROADMAP.md
+- SECURITY.md
 
 ---
 
-## 👩‍💻 Author
+# 📄 License
+
+This project is licensed under the **MIT License**.
+
+See the **LICENSE** file for more information.
+
+---
+
+# 👩‍💻 Author
 
 **Margaret Wambui Njaaga**
+
+Diploma in Information Technology Student
 
 GitHub:
 https://github.com/MissMolly037
 
 ---
+
+# ⭐ Support
+
+If you found this project useful, consider giving it a ⭐ on GitHub.
+
+Your support helps improve the project and encourages future development.

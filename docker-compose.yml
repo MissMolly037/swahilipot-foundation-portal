@@ -1,0 +1,90 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    image: swahilipot-portal:latest
+    container_name: swahilipot-portal
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      DJANGO_SETTINGS_MODULE: swahilipot_portal.settings
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-False}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-docker-dev-secret}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,0.0.0.0}
+      DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-http://localhost:8000,http://127.0.0.1:8000}
+      DJANGO_SITE_BASE_URL: ${DJANGO_SITE_BASE_URL:-http://localhost:8000}
+
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-swahilipot}
+      POSTGRES_USER: ${POSTGRES_USER:-swahilipot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-swahilipot}
+
+      DATABASE_URL: ${DATABASE_URL:-postgres://swahilipot:swahilipot@postgres:5432/swahilipot}
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - ./logs:/app/logs
+
+    networks:
+      - app-network
+
+    healthcheck:
+  test:
+    [
+      "CMD-SHELL",
+      "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=5)\"",
+    ]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 20s 
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: swahilipot-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-swahilipot}
+      POSTGRES_USER: ${POSTGRES_USER:-swahilipot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-swahilipot}
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-swahilipot} -d ${POSTGRES_DB:-swahilipot}"]
+
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+
+networks:
+  app-network:
+    driver: bridge

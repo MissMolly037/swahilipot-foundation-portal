@@ -1,18 +1,18 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .forms import UserAdminCreationForm, UserAdminChangeForm
+
 from .models import Department, User
 
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
+    list_display = ("name", "description")
     search_fields = ("name",)
+    ordering = ("name",)
 
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    add_form = UserAdminCreationForm
-    form = UserAdminChangeForm
     model = User
 
     list_display = (
@@ -20,9 +20,10 @@ class CustomUserAdmin(UserAdmin):
         "email",
         "first_name",
         "last_name",
-        "role",
         "department",
+        "role",
         "is_active",
+        "is_staff",
     )
 
     list_filter = (
@@ -30,17 +31,26 @@ class CustomUserAdmin(UserAdmin):
         "department",
         "is_active",
         "is_staff",
+        "is_superuser",
     )
 
     search_fields = (
         "username",
-        "email",
         "first_name",
         "last_name",
+        "email",
     )
 
-    fieldsets = (
-        *UserAdmin.fieldsets,
+    ordering = ("username",)
+
+    list_select_related = ("department",)
+
+    readonly_fields = (
+        "last_login",
+        "date_joined",
+    )
+
+    fieldsets = UserAdmin.fieldsets + (
         (
             "Portal Profile",
             {
@@ -49,26 +59,25 @@ class CustomUserAdmin(UserAdmin):
                     "profile_photo",
                     "department",
                     "role",
+                    "last_session_key",
                 )
             },
         ),
     )
 
-    add_fieldsets = (
+    add_fieldsets = UserAdmin.add_fieldsets + (
         (
-            None,
+            "Portal Profile",
             {
-                "classes": ("wide",),
                 "fields": (
-                    "username",
                     "email",
                     "first_name",
                     "last_name",
-                    "password1",
-                    "password2",
                     "department",
                     "role",
-                ),
+                    "phone_number",
+                    "profile_photo",
+                )
             },
         ),
     )
