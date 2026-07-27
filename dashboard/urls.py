@@ -10,5 +10,7 @@ urlpatterns = [
     path("event-scan-debug/", views.event_scan_debug, name="event_scan_debug"),
     path("reminders/", views.reminders, name="reminders"),
     path("reports/", views.reports, name="reports"),
-    path("reports/<str:kind>/<str:fmt>/", views.report_download, name="report_download"),
+    path(
+        "reports/<str:kind>/<str:fmt>/", views.report_download, name="report_download"
+    ),
 ]

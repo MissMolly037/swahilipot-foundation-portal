@@ -3,7 +3,6 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 
-
 ADMIN_ROLES = {"admin"}
 MANAGER_ROLES = {"admin", "program_manager", "department_head"}
 
@@ -17,7 +16,9 @@ def role_required(*roles):
                 return view_func(request, *args, **kwargs)
             messages.error(request, "You do not have permission to access that page.")
             return redirect("dashboard:home")
+
         return wrapper
+
     return decorator
 
 
@@ -31,5 +32,7 @@ def capability_required(capability):
                 return view_func(request, *args, **kwargs)
             messages.error(request, "You do not have permission to access that page.")
             return redirect("dashboard:home")
+
         return wrapper
+
     return decorator

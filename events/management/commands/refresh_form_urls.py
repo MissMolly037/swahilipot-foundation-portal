@@ -11,6 +11,7 @@ Run after:
 Usage:
     python manage.py refresh_form_urls
 """
+
 from django.core.management.base import BaseCommand
 from events.models import Event, build_form_url
 

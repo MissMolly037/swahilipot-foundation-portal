@@ -38,13 +38,17 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.SUCCESS(f"  ✓ {event.title}"))
                     count += 1
                 else:
-                    self.stdout.write(self.style.WARNING(
-                        f"  ⚠ {event.title} — qrcode package not installed, skipped"
-                    ))
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"  ⚠ {event.title} — qrcode package not installed, skipped"
+                        )
+                    )
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"  ✗ {event.title} — {e}"))
 
         self.stdout.write(f"\nDone. {count}/{events.count()} QR codes regenerated.\n")
-        self.stdout.write(self.style.WARNING(
-            "Tip: if you changed DJANGO_SITE_BASE_URL, restart the server too.\n"
-        ))
+        self.stdout.write(
+            self.style.WARNING(
+                "Tip: if you changed DJANGO_SITE_BASE_URL, restart the server too.\n"
+            )
+        )

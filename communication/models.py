@@ -6,7 +6,9 @@ from accounts.models import Department
 class Announcement(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     attachment = models.FileField(upload_to="announcements/", blank=True, null=True)
 
@@ -18,7 +20,9 @@ class Announcement(models.Model):
 
 
 class DepartmentChannel(models.Model):
-    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name="channels")
+    department = models.ForeignKey(
+        Department, on_delete=models.CASCADE, related_name="channels"
+    )
     name = models.CharField(max_length=120)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -27,7 +31,9 @@ class DepartmentChannel(models.Model):
 
 
 class ChannelMessage(models.Model):
-    channel = models.ForeignKey(DepartmentChannel, on_delete=models.CASCADE, related_name="messages")
+    channel = models.ForeignKey(
+        DepartmentChannel, on_delete=models.CASCADE, related_name="messages"
+    )
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -38,8 +44,14 @@ class ChannelMessage(models.Model):
 
 
 class DirectMessage(models.Model):
-    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_messages")
-    receiver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="received_messages")
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_messages"
+    )
+    receiver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="received_messages",
+    )
     message = models.TextField()
     attachment = models.FileField(upload_to="direct_messages/", blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -51,12 +63,14 @@ class DirectMessage(models.Model):
 
 class Notification(models.Model):
     class Priority(models.TextChoices):
-        LOW      = "low",      "Low"
-        MEDIUM   = "medium",   "Medium"
-        HIGH     = "high",     "High"
+        LOW = "low", "Low"
+        MEDIUM = "medium", "Medium"
+        HIGH = "high", "High"
         CRITICAL = "critical", "Critical"
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications"
+    )
     title = models.CharField(max_length=160)
     message = models.TextField()
     read = models.BooleanField(default=False)
@@ -81,14 +95,15 @@ class Notification(models.Model):
 
 class PushSubscription(models.Model):
     """Stores a browser Web Push subscription for a user."""
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="push_subscriptions",
     )
     endpoint = models.TextField(unique=True)
-    p256dh   = models.TextField()
-    auth     = models.TextField()
+    p256dh = models.TextField()
+    auth = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

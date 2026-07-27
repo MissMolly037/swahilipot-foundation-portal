@@ -23,7 +23,14 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ("username", "first_name", "last_name", "email", "phone_number", "profile_photo")
+        fields = (
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "phone_number",
+            "profile_photo",
+        )
 
     def clean_username(self):
         username = self.cleaned_data["username"]
@@ -35,6 +42,7 @@ class ProfileForm(forms.ModelForm):
 
 class UserEditForm(forms.ModelForm):
     """Admin-facing form to edit any user's role, department, username and status."""
+
     username = forms.CharField(
         max_length=150,
         help_text="Letters, digits and @/./+/-/_ only.",
@@ -42,8 +50,16 @@ class UserEditForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ("username", "first_name", "last_name", "email", "phone_number",
-                  "role", "department", "is_active")
+        fields = (
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "phone_number",
+            "role",
+            "department",
+            "is_active",
+        )
 
     def clean_username(self):
         username = self.cleaned_data["username"]
@@ -55,10 +71,17 @@ class UserEditForm(forms.ModelForm):
 
 class AddUserForm(UserCreationForm):
     """Admin form to create a new portal user without going to the DB/admin."""
+
     class Meta:
         model = User
         fields = (
-            "username", "first_name", "last_name", "email",
-            "phone_number", "role", "department",
-            "password1", "password2",
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "phone_number",
+            "role",
+            "department",
+            "password1",
+            "password2",
         )

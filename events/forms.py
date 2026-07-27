@@ -27,12 +27,17 @@ class EventForm(forms.ModelForm):
     class Meta:
         model = Event
         fields = (
-            "title", "description", "location",
-            "start_date", "end_date", "capacity", "banner",
+            "title",
+            "description",
+            "location",
+            "start_date",
+            "end_date",
+            "capacity",
+            "banner",
         )
         widgets = {
             "start_date": forms.DateTimeInput(attrs={"type": "datetime-local"}),
-            "end_date":   forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            "end_date": forms.DateTimeInput(attrs={"type": "datetime-local"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -46,7 +51,7 @@ class EventForm(forms.ModelForm):
                     longitude=self.instance.venue_longitude,
                 )
                 self.fields["venue_site"].initial = site
-            except (ProjectSite.DoesNotExist, ProjectSite.MultipleObjectsReturned):
+            except ProjectSite.DoesNotExist, ProjectSite.MultipleObjectsReturned:
                 pass
 
         # Warn if no active sites exist
@@ -61,8 +66,8 @@ class EventForm(forms.ModelForm):
         event = super().save(commit=False)
         site = self.cleaned_data.get("venue_site")
         if site:
-            event.venue_latitude     = site.latitude
-            event.venue_longitude    = site.longitude
+            event.venue_latitude = site.latitude
+            event.venue_longitude = site.longitude
             event.venue_radius_meters = site.radius_meters
         if commit:
             event.save()

@@ -11,7 +11,11 @@ urlpatterns = [
     path("channels/<int:pk>/delete/", views.channel_delete, name="channel_delete"),
     path("direct/send/", views.send_direct, name="send_direct"),
     path("notifications/", views.notifications, name="notifications"),
-    path("notifications/<int:pk>/go/", views.notification_redirect, name="notification_redirect"),
+    path(
+        "notifications/<int:pk>/go/",
+        views.notification_redirect,
+        name="notification_redirect",
+    ),
     # Web Push
     path("push/vapid-key/", views.push_vapid_key, name="push_vapid_key"),
     path("push/subscribe/", views.push_subscribe, name="push_subscribe"),

@@ -12,17 +12,21 @@ class Department(models.Model):
 
 class User(AbstractUser):
     class Role(models.TextChoices):
-        ADMIN           = "admin",            "Admin"
-        STAFF           = "staff",            "Staff"
-        INTERN          = "intern",           "Intern"
-        PROGRAM_MANAGER = "program_manager",  "Program Manager"
-        DEPARTMENT_HEAD = "department_head",  "Department Head"
+        ADMIN = "admin", "Admin"
+        STAFF = "staff", "Staff"
+        INTERN = "intern", "Intern"
+        PROGRAM_MANAGER = "program_manager", "Program Manager"
+        DEPARTMENT_HEAD = "department_head", "Department Head"
 
-    email         = models.EmailField(unique=True)
-    phone_number  = models.CharField(max_length=30, blank=True)
+    email = models.EmailField(unique=True)
+    phone_number = models.CharField(max_length=30, blank=True)
     profile_photo = models.FileField(upload_to="profiles/", blank=True, null=True)
-    department    = models.ForeignKey(
-        Department, on_delete=models.SET_NULL, null=True, blank=True, related_name="users"
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="users",
     )
     role = models.CharField(max_length=30, choices=Role.choices, default=Role.STAFF)
 
@@ -51,7 +55,8 @@ class User(AbstractUser):
         Staff/Intern cannot create tasks.
         """
         return self.is_portal_admin() or self.role in {
-            self.Role.PROGRAM_MANAGER, self.Role.DEPARTMENT_HEAD
+            self.Role.PROGRAM_MANAGER,
+            self.Role.DEPARTMENT_HEAD,
         }
 
     def can_manage_events(self):
@@ -64,7 +69,8 @@ class User(AbstractUser):
         Dept Head sees attendance but only for their own department.
         """
         return self.is_portal_admin() or self.role in {
-            self.Role.PROGRAM_MANAGER, self.Role.DEPARTMENT_HEAD
+            self.Role.PROGRAM_MANAGER,
+            self.Role.DEPARTMENT_HEAD,
         }
 
     def can_monitor_all_attendance(self):
@@ -77,7 +83,8 @@ class User(AbstractUser):
         Dept Head can only post in their department channel.
         """
         return self.is_portal_admin() or self.role in {
-            self.Role.PROGRAM_MANAGER, self.Role.DEPARTMENT_HEAD
+            self.Role.PROGRAM_MANAGER,
+            self.Role.DEPARTMENT_HEAD,
         }
 
     def can_publish_announcements(self):
@@ -94,7 +101,8 @@ class User(AbstractUser):
         Dept Head can review suggestions from their own department members.
         """
         return self.is_portal_admin() or self.role in {
-            self.Role.PROGRAM_MANAGER, self.Role.DEPARTMENT_HEAD
+            self.Role.PROGRAM_MANAGER,
+            self.Role.DEPARTMENT_HEAD,
         }
 
     def can_manage_users(self):

@@ -2,6 +2,7 @@
 Web Push helper — sends a push notification to all of a user's subscriptions.
 Uses pywebpush + VAPID for authenticated delivery.
 """
+
 import json
 import logging
 import os
@@ -33,13 +34,15 @@ def send_push(user, title, body, link="/", priority="low", tag="sph-notification
     if not os.path.exists(_PRIVATE_KEY_PATH):
         return
 
-    payload = json.dumps({
-        "title": title,
-        "body": body,
-        "link": link,
-        "priority": priority,
-        "tag": tag,
-    })
+    payload = json.dumps(
+        {
+            "title": title,
+            "body": body,
+            "link": link,
+            "priority": priority,
+            "tag": tag,
+        }
+    )
 
     subs = PushSubscription.objects.filter(user=user)
     dead = []
@@ -66,7 +69,9 @@ def send_push(user, title, body, link="/", priority="low", tag="sph-notification
         PushSubscription.objects.filter(pk__in=dead).delete()
 
 
-def send_push_bulk(users, title, body, link="/", priority="low", tag="sph-notification"):
+def send_push_bulk(
+    users, title, body, link="/", priority="low", tag="sph-notification"
+):
     """Send push to a queryset or list of users."""
     for user in users:
         send_push(user, title, body, link=link, priority=priority, tag=tag)

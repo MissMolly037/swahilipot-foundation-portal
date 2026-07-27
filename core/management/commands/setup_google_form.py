@@ -47,12 +47,16 @@ class Command(BaseCommand):
             return
 
         # Extract the base URL (up to /viewform)
-        base_match = re.match(r"(https://docs\.google\.com/forms/d/e/[^/]+/viewform)", prefilled_url)
+        base_match = re.match(
+            r"(https://docs\.google\.com/forms/d/e/[^/]+/viewform)", prefilled_url
+        )
         if not base_match:
-            self.stdout.write(self.style.ERROR(
-                "Could not find a Google Form URL in that input.\n"
-                "It should start with: https://docs.google.com/forms/d/e/...\n"
-            ))
+            self.stdout.write(
+                self.style.ERROR(
+                    "Could not find a Google Form URL in that input.\n"
+                    "It should start with: https://docs.google.com/forms/d/e/...\n"
+                )
+            )
             return
 
         base_url = base_match.group(1)
@@ -65,10 +69,12 @@ class Command(BaseCommand):
         entry_params = {k: v[0] for k, v in params.items() if k.startswith("entry.")}
 
         if not entry_params:
-            self.stdout.write(self.style.ERROR(
-                "\nNo entry.XXXXXXXXX parameters found in the URL.\n"
-                "Make sure you filled in at least one field before clicking 'Get link'.\n"
-            ))
+            self.stdout.write(
+                self.style.ERROR(
+                    "\nNo entry.XXXXXXXXX parameters found in the URL.\n"
+                    "Make sure you filled in at least one field before clicking 'Get link'.\n"
+                )
+            )
             return
 
         self.stdout.write(f"\nFound {len(entry_params)} pre-fill field(s):\n")
@@ -81,7 +87,11 @@ class Command(BaseCommand):
 
         if len(entry_params) == 1:
             event_id_field = list(entry_params.keys())[0]
-            self.stdout.write(self.style.SUCCESS(f"\n→ Using {event_id_field} as the Event ID field.\n"))
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"\n→ Using {event_id_field} as the Event ID field.\n"
+                )
+            )
         else:
             self.stdout.write(
                 "\nWhich field should be used as the Event ID (event title will be pre-filled here)?\n"
@@ -91,13 +101,15 @@ class Command(BaseCommand):
             choice = input("Enter number: ").strip()
             try:
                 event_id_field = list(entry_params.keys())[int(choice) - 1]
-            except (ValueError, IndexError):
+            except ValueError, IndexError:
                 self.stdout.write(self.style.ERROR("Invalid choice. Aborting.\n"))
                 return
 
             remaining = {k: v for k, v in entry_params.items() if k != event_id_field}
             if remaining:
-                self.stdout.write("\nSet an Event Name field? (optional — press Enter to skip)\n")
+                self.stdout.write(
+                    "\nSet an Event Name field? (optional — press Enter to skip)\n"
+                )
                 for i, (k, v) in enumerate(remaining.items(), 1):
                     self.stdout.write(f"  [{i}] {k}  (had value: '{v}')")
                 self.stdout.write("  [0] Skip")
@@ -105,7 +117,7 @@ class Command(BaseCommand):
                 if choice2 and choice2 != "0":
                     try:
                         event_name_field = list(remaining.keys())[int(choice2) - 1]
-                    except (ValueError, IndexError):
+                    except ValueError, IndexError:
                         pass
 
         # Write to .env
@@ -127,6 +139,7 @@ class Command(BaseCommand):
         # Regenerate all QR codes
         self.stdout.write("Regenerating QR codes for all events...\n")
         from events.models import Event, build_form_url
+
         count = 0
         for event in Event.objects.all():
             try:
@@ -143,14 +156,18 @@ class Command(BaseCommand):
                     self.stdout.write(f"    Form URL: {event.google_form_url or 'N/A'}")
                     count += 1
                 else:
-                    self.stdout.write(self.style.WARNING(f"  ⚠ {event.title} — qrcode not installed"))
+                    self.stdout.write(
+                        self.style.WARNING(f"  ⚠ {event.title} — qrcode not installed")
+                    )
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"  ✗ {event.title}: {e}"))
 
         self.stdout.write(f"\n✓ {count} QR code(s) regenerated.\n")
-        self.stdout.write(self.style.WARNING(
-            "⚠ Restart your Django server to load the new .env values.\n"
-        ))
+        self.stdout.write(
+            self.style.WARNING(
+                "⚠ Restart your Django server to load the new .env values.\n"
+            )
+        )
 
     def _update_env(self, env_path, key, value):
         """Update or add a key=value line in the .env file."""

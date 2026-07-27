@@ -8,6 +8,7 @@ existing printed codes.
 Usage:
     python manage.py regenerate_qr_codes
 """
+
 from django.core.management.base import BaseCommand
 from events.models import Event
 
@@ -35,4 +36,6 @@ class Command(BaseCommand):
                 )
             )
 
-        self.stdout.write(self.style.SUCCESS(f"\nDone. {total} QR code(s) regenerated."))
+        self.stdout.write(
+            self.style.SUCCESS(f"\nDone. {total} QR code(s) regenerated.")
+        )

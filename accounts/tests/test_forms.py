@@ -73,7 +73,6 @@ class UserEditFormTests(TestCase):
             },
         )
 
-        
         self.assertTrue(form.is_valid())
 
 

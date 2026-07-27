@@ -5,7 +5,14 @@ from .models import Task, TaskAttachment, TaskComment
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ("title", "description", "assigned_to", "priority", "status", "due_date")
+        fields = (
+            "title",
+            "description",
+            "assigned_to",
+            "priority",
+            "status",
+            "due_date",
+        )
         widgets = {"due_date": forms.DateInput(attrs={"type": "date"})}
 
 
@@ -25,4 +32,3 @@ class TaskAttachmentForm(forms.ModelForm):
     class Meta:
         model = TaskAttachment
         fields = ("file",)
-

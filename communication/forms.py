@@ -5,13 +5,13 @@ from .models import Announcement, ChannelMessage, DepartmentChannel, DirectMessa
 
 class AnnouncementForm(forms.ModelForm):
     class Meta:
-        model  = Announcement
+        model = Announcement
         fields = ("title", "content", "attachment")
 
 
 class ChannelForm(forms.ModelForm):
     class Meta:
-        model  = DepartmentChannel
+        model = DepartmentChannel
         fields = ("department", "name")
 
     def __init__(self, *args, dept_queryset=None, **kwargs):
@@ -24,18 +24,20 @@ class ChannelForm(forms.ModelForm):
 
 class ChannelMessageForm(forms.ModelForm):
     class Meta:
-        model  = ChannelMessage
+        model = ChannelMessage
         fields = ("content", "attachment")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["content"].widget = forms.Textarea(attrs={"rows": 2, "placeholder": "Write a message…"})
+        self.fields["content"].widget = forms.Textarea(
+            attrs={"rows": 2, "placeholder": "Write a message…"}
+        )
         self.fields["content"].label = ""
 
 
 class DirectMessageForm(forms.ModelForm):
     class Meta:
-        model  = DirectMessage
+        model = DirectMessage
         fields = ("receiver", "message", "attachment")
 
     def __init__(self, *args, receiver_queryset=None, **kwargs):

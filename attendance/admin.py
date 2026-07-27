@@ -11,7 +11,14 @@ class ProjectSiteAdmin(admin.ModelAdmin):
 
 @admin.register(Attendance)
 class AttendanceAdmin(admin.ModelAdmin):
-    list_display = ("user", "project_site", "check_in_time", "check_out_time", "total_hours", "status")
+    list_display = (
+        "user",
+        "project_site",
+        "check_in_time",
+        "check_out_time",
+        "total_hours",
+        "status",
+    )
     list_filter = ("status", "project_site", "check_in_time")
     search_fields = ("user__username", "user__first_name", "user__last_name")
 
@@ -22,14 +29,30 @@ class ActivityLogAdmin(admin.ModelAdmin):
     list_filter = ("action", "timestamp")
     search_fields = ("user__username", "description", "ip_address")
 
+
 from .models import GeofenceViolation
 
 
 @admin.register(GeofenceViolation)
 class GeofenceViolationAdmin(admin.ModelAdmin):
-    list_display = ("user", "project_site", "detected_at", "distance_meters", "resolution", "management_alerted")
+    list_display = (
+        "user",
+        "project_site",
+        "detected_at",
+        "distance_meters",
+        "resolution",
+        "management_alerted",
+    )
     list_filter = ("resolution", "management_alerted", "project_site", "detected_at")
     search_fields = ("user__username", "user__first_name", "user__last_name")
-    readonly_fields = ("user", "attendance", "project_site", "detected_at", "latitude", "longitude",
-                       "distance_meters", "management_alerted")
+    readonly_fields = (
+        "user",
+        "attendance",
+        "project_site",
+        "detected_at",
+        "latitude",
+        "longitude",
+        "distance_meters",
+        "management_alerted",
+    )
     ordering = ("-detected_at",)

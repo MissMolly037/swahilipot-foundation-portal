@@ -33,7 +33,9 @@ class ReplitCsrfMiddleware(CsrfViewMiddleware):
 
     def process_view(self, request, callback, callback_args, callback_kwargs):
         # Collect the request origin (fall back to Referer if Origin absent)
-        raw = request.META.get("HTTP_ORIGIN", "") or request.META.get("HTTP_REFERER", "")
+        raw = request.META.get("HTTP_ORIGIN", "") or request.META.get(
+            "HTTP_REFERER", ""
+        )
         if raw:
             try:
                 parsed = urlparse(raw)
@@ -41,6 +43,7 @@ class ReplitCsrfMiddleware(CsrfViewMiddleware):
                 if any(host.endswith(suffix) for suffix in _REPLIT_SUFFIXES):
                     trusted = f"{parsed.scheme}://{parsed.netloc}"
                     from django.conf import settings as _s
+
                     if trusted not in _s.CSRF_TRUSTED_ORIGINS:
                         _s.CSRF_TRUSTED_ORIGINS.append(trusted)
             except Exception:
@@ -93,6 +96,7 @@ class SingleLoginMiddleware:
                 "You have been signed out because your account was logged in from another device or browser.",
             )
             from django.shortcuts import redirect
+
             return redirect("login")
 
         response = self.get_response(request)

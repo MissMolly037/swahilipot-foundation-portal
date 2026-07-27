@@ -24,39 +24,43 @@ def profile(request):
 def user_directory(request):
     """Admin panel — all users grouped by role."""
     roles = [
-        ("admin",           "Admin",           "danger"),
+        ("admin", "Admin", "danger"),
         ("program_manager", "Program Manager", "primary"),
         ("department_head", "Department Head", "purple"),
-        ("staff",           "Staff",           "success"),
-        ("intern",          "Intern",          "warning"),
+        ("staff", "Staff", "success"),
+        ("intern", "Intern", "warning"),
     ]
     groups = []
-    all_users = (
-        User.objects
-        .select_related("department")
-        .order_by("role", "first_name", "username")
+    all_users = User.objects.select_related("department").order_by(
+        "role", "first_name", "username"
     )
     for role_key, role_label, colour in roles:
         members = [u for u in all_users if u.role == role_key]
-        groups.append({
-            "key":    role_key,
-            "label":  role_label,
-            "colour": colour,
-            "users":  members,
-        })
+        groups.append(
+            {
+                "key": role_key,
+                "label": role_label,
+                "colour": colour,
+                "users": members,
+            }
+        )
 
     # Summary counts for the top cards
-    total       = all_users.count()
-    active      = all_users.filter(is_active=True).count()
+    total = all_users.count()
+    active = all_users.filter(is_active=True).count()
     departments = Department.objects.all()
 
-    return render(request, "accounts/user_directory.html", {
-        "groups":      groups,
-        "total":       total,
-        "active":      active,
-        "inactive":    total - active,
-        "departments": departments,
-    })
+    return render(
+        request,
+        "accounts/user_directory.html",
+        {
+            "groups": groups,
+            "total": total,
+            "active": active,
+            "inactive": total - active,
+            "departments": departments,
+        },
+    )
 
 
 @role_required("admin")
@@ -90,11 +94,13 @@ def user_toggle_active(request, pk):
 def user_reset_password(request, pk):
     """Admin sets a new password for any user — no email required."""
     from django.contrib.auth.forms import SetPasswordForm
+
     target = get_object_or_404(User, pk=pk)
     form = SetPasswordForm(target, request.POST or None)
     if request.method == "POST" and form.is_valid():
         form.save()
         from core.notify import notify_user as _notify
+
         _notify(
             target,
             "Your password has been reset",
@@ -105,11 +111,15 @@ def user_reset_password(request, pk):
         )
         messages.success(request, f"Password for {target} has been reset.")
         return redirect("accounts:user_directory")
-    return render(request, "accounts/reset_password.html", {
-        "form": form,
-        "target": target,
-        "title": f"Reset Password — {target}",
-    })
+    return render(
+        request,
+        "accounts/reset_password.html",
+        {
+            "form": form,
+            "target": target,
+            "title": f"Reset Password — {target}",
+        },
+    )
 
 
 # ── Department management ─────────────────────────────────────────────────
@@ -119,18 +129,24 @@ from django import forms as django_forms
 
 class DepartmentForm(django_forms.ModelForm):
     class Meta:
-        model  = Department
+        model = Department
         fields = ("name", "description")
 
 
 @role_required("admin")
 def department_list(request):
     departments = Department.objects.prefetch_related("users").all()
-    all_unassigned = User.objects.filter(is_active=True, department__isnull=True).order_by("first_name", "username")
-    return render(request, "accounts/departments.html", {
-        "departments":   departments,
-        "all_unassigned": all_unassigned,
-    })
+    all_unassigned = User.objects.filter(
+        is_active=True, department__isnull=True
+    ).order_by("first_name", "username")
+    return render(
+        request,
+        "accounts/departments.html",
+        {
+            "departments": departments,
+            "all_unassigned": all_unassigned,
+        },
+    )
 
 
 @role_required("admin")
@@ -191,6 +207,7 @@ def user_add(request):
         user.is_active = True
         user.save()
         from core.notify import notify_user
+
         notify_user(
             user,
             "Welcome to Swahilipot Hub Portal!",
@@ -201,10 +218,13 @@ def user_add(request):
         )
         messages.success(request, f"User '{user.username}' created successfully.")
         return redirect("accounts:user_directory")
-    return render(request, "accounts/add_user.html", {"form": form, "title": "Add New User"})
+    return render(
+        request, "accounts/add_user.html", {"form": form, "title": "Add New User"}
+    )
 
 
 # ── Department Task Assignment ────────────────────────────────────────────
+
 
 @role_required("admin")
 def department_assign_task(request, dept_pk):
@@ -213,6 +233,7 @@ def department_assign_task(request, dept_pk):
     the departments page.
     """
     from tasks.models import Task
+
     dept = get_object_or_404(Department, pk=dept_pk)
 
     if request.method != "POST":
@@ -222,10 +243,10 @@ def department_assign_task(request, dept_pk):
         messages.error(request, "You do not have permission to assign tasks.")
         return redirect("accounts:departments")
 
-    title       = request.POST.get("title", "").strip()
+    title = request.POST.get("title", "").strip()
     description = request.POST.get("description", "").strip()
-    priority    = request.POST.get("priority", Task.Priority.MEDIUM)
-    due_date    = request.POST.get("due_date", "")
+    priority = request.POST.get("priority", Task.Priority.MEDIUM)
+    due_date = request.POST.get("due_date", "")
     assign_mode = request.POST.get("assign_mode", "whole")
 
     if not title or not description or not due_date:
@@ -254,10 +275,14 @@ def department_assign_task(request, dept_pk):
         return redirect("accounts:departments")
 
     from core.notify import notify_user as _notify_user
+
     count = 0
     # Map task priority to notification priority
     _priority_map = {
-        "low": "low", "medium": "medium", "high": "high", "critical": "critical"
+        "low": "low",
+        "medium": "medium",
+        "high": "high",
+        "critical": "critical",
     }
     notif_priority = _priority_map.get(priority, "medium")
     for member in recipients:
@@ -274,19 +299,22 @@ def department_assign_task(request, dept_pk):
             member,
             f"New task assigned: {title}",
             f"{request.user.get_full_name() or request.user.username} assigned you a task "
-            f"via the {dept.name} department: \"{title}\" — due {due_date}. "
+            f'via the {dept.name} department: "{title}" — due {due_date}. '
             f"Priority: {priority.title()}.",
             priority=notif_priority,
             link="/tasks/",
         )
         count += 1
 
-    messages.success(request, f"Task assigned to {count} member{'s' if count != 1 else ''} in {dept.name}.")
+    messages.success(
+        request,
+        f"Task assigned to {count} member{'s' if count != 1 else ''} in {dept.name}.",
+    )
     return redirect("accounts:departments")
 
 
-
 # ── Self-service password recovery (no email) ─────────────────────────────────
+
 
 def password_recover(request):
     """
@@ -319,15 +347,18 @@ def password_recover(request):
         if form.is_valid():
             form.save()
             del request.session["recover_username"]
-            messages.success(request, "Password changed successfully. Please log in with your new password.")
+            messages.success(
+                request,
+                "Password changed successfully. Please log in with your new password.",
+            )
             return redirect("login")
         return render(request, "registration/password_recover_set.html", {"form": form})
 
     # ── Phase 1: verify identity ──────────────────────────────────────────
     error = None
     if request.method == "POST":
-        username    = request.POST.get("username", "").strip()
-        email       = request.POST.get("email", "").strip().lower()
+        username = request.POST.get("username", "").strip()
+        email = request.POST.get("email", "").strip().lower()
         old_password = request.POST.get("old_password", "")
 
         # All three fields must be provided
@@ -346,6 +377,10 @@ def password_recover(request):
                 # Identity confirmed — store username in session, show new-password form
                 request.session["recover_username"] = user.username
                 set_form = SetPasswordForm(user)
-                return render(request, "registration/password_recover_set.html", {"form": set_form})
+                return render(
+                    request,
+                    "registration/password_recover_set.html",
+                    {"form": set_form},
+                )
 
     return render(request, "registration/password_recover.html", {"error": error})

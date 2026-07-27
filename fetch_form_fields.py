@@ -13,7 +13,9 @@ entries = list(dict.fromkeys(re.findall(r"entry\.(\d+)", html)))
 print("entry IDs found:", entries)
 
 # Try FB_PUBLIC_LOAD_DATA_ block
-m = re.search(r"FB_PUBLIC_LOAD_DATA_\s*=\s*(\[.+?(?=;\s*(?:var |</script>)))", html, re.DOTALL)
+m = re.search(
+    r"FB_PUBLIC_LOAD_DATA_\s*=\s*(\[.+?(?=;\s*(?:var |</script>)))", html, re.DOTALL
+)
 if m:
     print("\nRaw data slice (first 3000 chars):")
     print(m.group(1)[:3000])

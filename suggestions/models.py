@@ -18,9 +18,13 @@ class Suggestion(models.Model):
     message = models.TextField()
     category = models.CharField(max_length=30, choices=Category.choices)
     anonymous = models.BooleanField(default=False)
-    submitted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
     submitted_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.PENDING
+    )
     response = models.TextField(blank=True)
 
     class Meta:
@@ -31,4 +35,3 @@ class Suggestion(models.Model):
 
     def __str__(self):
         return self.title
-

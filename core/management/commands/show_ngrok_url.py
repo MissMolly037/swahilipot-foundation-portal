@@ -21,55 +21,59 @@ class Command(BaseCommand):
         url = self._get_ngrok_url()
 
         if not url:
-            self.stdout.write(self.style.ERROR(
-                "\nCould not find a running ngrok tunnel.\n"
-                "Make sure ngrok is running:  ngrok http 8000\n"
-                "Then run this command again.\n"
-            ))
+            self.stdout.write(
+                self.style.ERROR(
+                    "\nCould not find a running ngrok tunnel.\n"
+                    "Make sure ngrok is running:  ngrok http 8000\n"
+                    "Then run this command again.\n"
+                )
+            )
             return
 
         self.stdout.write(self.style.SUCCESS(f"\n✅  Your ngrok URL is:\n"))
         self.stdout.write(self.style.HTTP_INFO(f"    {url}\n"))
 
         self.stdout.write("\n" + "─" * 60)
-        self.stdout.write(self.style.WARNING(
-            "\nStep 1 — Update your .env file:\n"
-        ))
+        self.stdout.write(self.style.WARNING("\nStep 1 — Update your .env file:\n"))
         self.stdout.write(f"    DJANGO_SITE_BASE_URL={url}\n")
-        self.stdout.write(f"    DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost,.ngrok-free.app\n")
+        self.stdout.write(
+            f"    DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost,.ngrok-free.app\n"
+        )
 
-        self.stdout.write(self.style.WARNING(
-            "\nStep 2 — Paste this into your Google Apps Script:\n"
-        ))
+        self.stdout.write(
+            self.style.WARNING("\nStep 2 — Paste this into your Google Apps Script:\n")
+        )
         self.stdout.write(
             f'    const PORTAL_BASE_URL = "{url}";\n'
             f"\n"
             f"    function onFormSubmit(e) {{\n"
-            f'      const values = e.namedValues;\n'
+            f"      const values = e.namedValues;\n"
             f'      // Use event title value from the "Event ID" field in your form\n'
             f'      const eventTitle = values["Event ID"] ? values["Event ID"][0] : "";\n'
-            f'      const payload = {{ event_id: eventTitle }};\n'
-            f'      try {{\n'
-            f'        const response = UrlFetchApp.fetch(\n'
+            f"      const payload = {{ event_id: eventTitle }};\n"
+            f"      try {{\n"
+            f"        const response = UrlFetchApp.fetch(\n"
             f'          PORTAL_BASE_URL + "/events/form-response/",\n'
-            f'          {{\n'
+            f"          {{\n"
             f'            method: "post",\n'
             f'            contentType: "application/json",\n'
-            f'            payload: JSON.stringify(payload),\n'
-            f'            muteHttpExceptions: true\n'
-            f'          }}\n'
-            f'        );\n'
+            f"            payload: JSON.stringify(payload),\n"
+            f"            muteHttpExceptions: true\n"
+            f"          }}\n"
+            f"        );\n"
             f'        Logger.log("Status: " + response.getResponseCode());\n'
             f'        Logger.log("Response: " + response.getContentText());\n'
-            f'      }} catch (error) {{\n'
+            f"      }} catch (error) {{\n"
             f'        Logger.log("Webhook failed: " + error.toString());\n'
-            f'      }}\n'
-            f'    }}\n'
+            f"      }}\n"
+            f"    }}\n"
         )
 
-        self.stdout.write(self.style.WARNING(
-            "\nStep 3 — Regenerate all QR codes so they use the new URL:\n"
-        ))
+        self.stdout.write(
+            self.style.WARNING(
+                "\nStep 3 — Regenerate all QR codes so they use the new URL:\n"
+            )
+        )
         self.stdout.write(
             "    Go to each event in the portal → click 'Regenerate QR Code'\n"
             "    OR run: python manage.py regenerate_all_qr\n"

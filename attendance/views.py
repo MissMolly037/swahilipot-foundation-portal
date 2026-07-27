@@ -8,13 +8,18 @@ from datetime import datetime, timedelta
 from communication.models import Notification
 from core.permissions import role_required
 from .forms import ProjectSiteForm
+
 try:
     from django_ratelimit.decorators import ratelimit
 except ImportError:
+
     def ratelimit(*args, **kwargs):
         def decorator(view_func):
             return view_func
+
         return decorator
+
+
 from .models import ActivityLog, Attendance, ProjectSite
 from .utils import haversine_distance_meters
 
@@ -27,7 +32,9 @@ def client_ip(request):
 def log_activity(request, action, description=""):
     ActivityLog.objects.create(
         user=request.user if request.user.is_authenticated else None,
-        action=action, description=description, ip_address=client_ip(request)
+        action=action,
+        description=description,
+        ip_address=client_ip(request),
     )
 
 
@@ -42,16 +49,22 @@ def active_sites():
 
 
 def inside_site(latitude, longitude, site):
-    distance = haversine_distance_meters(latitude, longitude, site.latitude, site.longitude)
+    distance = haversine_distance_meters(
+        latitude, longitude, site.latitude, site.longitude
+    )
     return distance <= site.radius_meters, distance
 
 
 def scheduled_datetime(day, scheduled_time):
-    return timezone.make_aware(datetime.combine(day, scheduled_time), timezone.get_current_timezone())
+    return timezone.make_aware(
+        datetime.combine(day, scheduled_time), timezone.get_current_timezone()
+    )
 
 
 def arrival_status(actual_time, site):
-    expected = scheduled_datetime(timezone.localtime(actual_time).date(), site.expected_check_in_time)
+    expected = scheduled_datetime(
+        timezone.localtime(actual_time).date(), site.expected_check_in_time
+    )
     grace_end = expected + timedelta(minutes=site.grace_minutes)
     if actual_time < expected:
         return Attendance.ArrivalStatus.EARLY
@@ -61,7 +74,9 @@ def arrival_status(actual_time, site):
 
 
 def departure_status(actual_time, site):
-    expected = scheduled_datetime(timezone.localtime(actual_time).date(), site.expected_check_out_time)
+    expected = scheduled_datetime(
+        timezone.localtime(actual_time).date(), site.expected_check_out_time
+    )
     grace_end = expected + timedelta(minutes=site.grace_minutes)
     if actual_time < expected:
         return Attendance.DepartureStatus.LEFT_EARLY
@@ -72,7 +87,10 @@ def departure_status(actual_time, site):
 
 def notify_attendance(user, title, message, priority="low", link=""):
     from communication.models import Notification as _N
-    _N.objects.create(user=user, title=title, message=message, priority=priority, link=link)
+
+    _N.objects.create(
+        user=user, title=title, message=message, priority=priority, link=link
+    )
 
 
 def auto_checkout_stale_sessions():
@@ -101,33 +119,37 @@ def auto_checkout_stale_sessions():
 
     for record in open_sessions:
         check_in_local = timezone.localtime(record.check_in_time)
-        check_in_date  = check_in_local.date()
+        check_in_date = check_in_local.date()
 
-        expected_checkout = scheduled_datetime(check_in_date, site.expected_check_out_time)
-        grace_deadline    = expected_checkout + timedelta(minutes=site.grace_minutes)
+        expected_checkout = scheduled_datetime(
+            check_in_date, site.expected_check_out_time
+        )
+        grace_deadline = expected_checkout + timedelta(minutes=site.grace_minutes)
 
         if now < grace_deadline:
             continue  # Still within the grace window — don't close yet
 
         # ── Close the session ──────────────────────────────────────────────
-        close_time   = expected_checkout + timedelta(minutes=site.grace_minutes)
+        close_time = expected_checkout + timedelta(minutes=site.grace_minutes)
         # Record at the actual expected checkout (not grace end) for accurate hours
         record_close_time = expected_checkout
-        duration     = record_close_time - record.check_in_time
-        total_hours  = Decimal(str(round(max(duration.total_seconds(), 0) / 3600, 2)))
+        duration = record_close_time - record.check_in_time
+        total_hours = Decimal(str(round(max(duration.total_seconds(), 0) / 3600, 2)))
 
-        record.check_out_time      = record_close_time
-        record.check_out_latitude  = record.check_in_latitude
+        record.check_out_time = record_close_time
+        record.check_out_latitude = record.check_in_latitude
         record.check_out_longitude = record.check_in_longitude
-        record.total_hours         = total_hours
-        record.departure_status    = Attendance.DepartureStatus.LEFT_EARLY  # missed checkout = left early
-        record.status              = Attendance.Status.CHECKED_OUT
+        record.total_hours = total_hours
+        record.departure_status = (
+            Attendance.DepartureStatus.LEFT_EARLY
+        )  # missed checkout = left early
+        record.status = Attendance.Status.CHECKED_OUT
         record.save()
 
-        user_name    = record.user.get_full_name() or record.user.username
-        close_str    = timezone.localtime(record_close_time).strftime("%H:%M")
-        date_str     = check_in_local.strftime("%d %b %Y")
-        checkin_str  = check_in_local.strftime("%H:%M")
+        user_name = record.user.get_full_name() or record.user.username
+        close_str = timezone.localtime(record_close_time).strftime("%H:%M")
+        date_str = check_in_local.strftime("%d %b %Y")
+        checkin_str = check_in_local.strftime("%H:%M")
         deadline_str = (
             f"{site.expected_check_out_time.strftime('%H:%M')} + "
             f"{site.grace_minutes} min grace"
@@ -185,9 +207,15 @@ def attendance_home(request):
     auto_checkout_stale_sessions()
     today = timezone.localdate()
     records = Attendance.objects.filter(user=request.user)[:20]
-    current = Attendance.objects.filter(user=request.user, status=Attendance.Status.CHECKED_IN).first()
-    hours = Attendance.objects.filter(user=request.user, check_in_time__date=today).aggregate(
-        total=Sum("total_hours"))["total"] or 0
+    current = Attendance.objects.filter(
+        user=request.user, status=Attendance.Status.CHECKED_IN
+    ).first()
+    hours = (
+        Attendance.objects.filter(
+            user=request.user, check_in_time__date=today
+        ).aggregate(total=Sum("total_hours"))["total"]
+        or 0
+    )
     # Once-per-day: check if user already completed attendance today
     already_done_today = (not current) and Attendance.objects.filter(
         user=request.user,
@@ -201,10 +229,10 @@ def attendance_home(request):
     # project site is required so we can highlight it in the template.
     from events.models import EventRegistration
     from attendance.utils import haversine_distance_meters as _hav
+
     now_dt = timezone.now()
     event_reg = (
-        EventRegistration.objects
-        .filter(
+        EventRegistration.objects.filter(
             participant=request.user,
             event__start_date__date__lte=today,
             event__end_date__gte=now_dt,
@@ -218,28 +246,40 @@ def attendance_home(request):
         active_event = event_reg.event
         for ps in ProjectSite.objects.all():
             d = _hav(
-                float(active_event.venue_latitude), float(active_event.venue_longitude),
-                float(ps.latitude), float(ps.longitude),
+                float(active_event.venue_latitude),
+                float(active_event.venue_longitude),
+                float(ps.latitude),
+                float(ps.longitude),
             )
             if d < 5:
                 required_site = ps
                 break
 
-    return render(request, "attendance/home.html", {
-        "records": records,
-        "current": current,
-        "hours_today": hours,
-        "site": sites[0] if len(sites) == 1 else (current.project_site if current else None),
-        "active_sites": sites,
-        "already_done_today": already_done_today,
-        "active_event":   active_event,    # event happening today (user is registered)
-        "required_site":  required_site,   # the site the event requires
-    })
+    return render(
+        request,
+        "attendance/home.html",
+        {
+            "records": records,
+            "current": current,
+            "hours_today": hours,
+            "site": (
+                sites[0]
+                if len(sites) == 1
+                else (current.project_site if current else None)
+            ),
+            "active_sites": sites,
+            "already_done_today": already_done_today,
+            "active_event": active_event,  # event happening today (user is registered)
+            "required_site": required_site,  # the site the event requires
+        },
+    )
 
 
 @role_required("admin")
 def site_list(request):
-    return render(request, "attendance/sites.html", {"sites": ProjectSite.objects.all()})
+    return render(
+        request, "attendance/sites.html", {"sites": ProjectSite.objects.all()}
+    )
 
 
 @role_required("admin")
@@ -260,7 +300,9 @@ def site_create(request):
         site = form.save()
         messages.success(request, "Project site saved.")
         return redirect("attendance:sites")
-    return render(request, "form.html", {"form": form, "title": "Add / Edit Project Site"})
+    return render(
+        request, "form.html", {"form": form, "title": "Add / Edit Project Site"}
+    )
 
 
 @role_required("admin")
@@ -291,7 +333,9 @@ def check_in(request):
     if not site:
         messages.error(request, "No active project site configured.")
         return redirect("attendance:home")
-    open_record = Attendance.objects.filter(user=request.user, status=Attendance.Status.CHECKED_IN).first()
+    open_record = Attendance.objects.filter(
+        user=request.user, status=Attendance.Status.CHECKED_IN
+    ).first()
     if open_record:
         messages.warning(request, "You are already checked in.")
         return redirect("attendance:home")
@@ -302,12 +346,15 @@ def check_in(request):
         check_in_time__date=today,
     ).exists()
     if already_today:
-        messages.warning(request, "You have already checked in today. Only one check-in per day is allowed.")
+        messages.warning(
+            request,
+            "You have already checked in today. Only one check-in per day is allowed.",
+        )
         return redirect("attendance:home")
     try:
         lat = Decimal(request.POST["latitude"])
         lng = Decimal(request.POST["longitude"])
-    except (KeyError, Exception):
+    except KeyError, Exception:
         messages.error(request, "Location data missing. Please allow location access.")
         return redirect("attendance:home")
 
@@ -316,10 +363,10 @@ def check_in(request):
     # checking in at the correct venue site the admin set for that event.
     from events.models import EventRegistration
     from attendance.utils import haversine_distance_meters
+
     now_dt = timezone.now()
     active_event_reg = (
-        EventRegistration.objects
-        .filter(
+        EventRegistration.objects.filter(
             participant=request.user,
             event__start_date__date__lte=today,
             event__end_date__gte=now_dt,
@@ -335,10 +382,12 @@ def check_in(request):
             event_site = None
             for ps in ProjectSite.objects.all():
                 d = haversine_distance_meters(
-                    float(event.venue_latitude), float(event.venue_longitude),
-                    float(ps.latitude), float(ps.longitude),
+                    float(event.venue_latitude),
+                    float(event.venue_longitude),
+                    float(ps.latitude),
+                    float(ps.longitude),
                 )
-                if d < 5:   # within 5 m → same site
+                if d < 5:  # within 5 m → same site
                     event_site = ps
                     break
 
@@ -353,12 +402,17 @@ def check_in(request):
 
     ok, distance = inside_site(lat, lng, site)
     if not ok:
-        messages.error(request, f"You are {distance:.0f} m from the site (max {site.radius_meters} m). Check-in denied.")
+        messages.error(
+            request,
+            f"You are {distance:.0f} m from the site (max {site.radius_meters} m). Check-in denied.",
+        )
         return redirect("attendance:home")
     arr = arrival_status(now_dt, site)
     record = Attendance.objects.create(
-        user=request.user, project_site=site,
-        check_in_latitude=lat, check_in_longitude=lng,
+        user=request.user,
+        project_site=site,
+        check_in_latitude=lat,
+        check_in_longitude=lng,
         arrival_status=arr,
     )
 
@@ -366,6 +420,7 @@ def check_in(request):
     # This links the GPS attendance check-in to the event, so the event
     # report's "Attended?" column shows "Yes" for this user.
     from events.models import EventCheckIn as _EventCheckIn
+
     if active_event_reg:
         event_for_checkin = active_event_reg.event
         _EventCheckIn.objects.get_or_create(
@@ -397,7 +452,9 @@ def check_out(request):
     auto_checkout_stale_sessions()
     if request.method != "POST":
         return redirect("attendance:home")
-    record = Attendance.objects.filter(user=request.user, status=Attendance.Status.CHECKED_IN).first()
+    record = Attendance.objects.filter(
+        user=request.user, status=Attendance.Status.CHECKED_IN
+    ).first()
     if not record:
         # Check if user already completed check-in and check-out today
         today = timezone.localdate()
@@ -414,13 +471,15 @@ def check_out(request):
     try:
         lat = Decimal(request.POST["latitude"])
         lng = Decimal(request.POST["longitude"])
-    except (KeyError, Exception):
+    except KeyError, Exception:
         messages.error(request, "Location data missing.")
         return redirect("attendance:home")
     site = record.project_site
     ok, distance = inside_site(lat, lng, site)
     if not ok:
-        messages.error(request, f"You are {distance:.0f} m from the site. Check-out denied.")
+        messages.error(
+            request, f"You are {distance:.0f} m from the site. Check-out denied."
+        )
         return redirect("attendance:home")
     now = timezone.now()
     dep = departure_status(now, site)
@@ -440,16 +499,18 @@ def check_out(request):
     # ── Early check-out: alert managers immediately via push + in-app ──────
     if dep == Attendance.DepartureStatus.LEFT_EARLY:
         from core.notify import notify_managers, HIGH as _HIGH
-        _name         = request.user.get_full_name() or request.user.username
-        _actual_str   = timezone.localtime(now).strftime("%H:%M")
+
+        _name = request.user.get_full_name() or request.user.username
+        _actual_str = timezone.localtime(now).strftime("%H:%M")
         _expected_str = site.expected_check_out_time.strftime("%H:%M")
         # Calculate how many minutes early they left
         from datetime import datetime as _dt
-        _expected_dt  = timezone.make_aware(
+
+        _expected_dt = timezone.make_aware(
             _dt.combine(timezone.localdate(), site.expected_check_out_time)
         )
-        _mins_early   = max(0, int((_expected_dt - now).total_seconds() / 60))
-        _early_str    = (
+        _mins_early = max(0, int((_expected_dt - now).total_seconds() / 60))
+        _early_str = (
             f"{_mins_early} minute{'s' if _mins_early != 1 else ''}"
             if _mins_early < 60
             else f"{_mins_early // 60}h {_mins_early % 60}m"
@@ -466,14 +527,20 @@ def check_out(request):
             link="/attendance/admin/",
         )
 
-    log_activity(request, "check_out", f"Hours: {record.total_hours}, departure: {dep_label}")
-    messages.success(request, f"Checked out. Hours recorded: {record.total_hours}h ({dep_label}).")
+    log_activity(
+        request, "check_out", f"Hours: {record.total_hours}, departure: {dep_label}"
+    )
+    messages.success(
+        request, f"Checked out. Hours recorded: {record.total_hours}h ({dep_label})."
+    )
     return redirect("attendance:home")
 
 
 @role_required("admin")
 def admin_attendance(request):
-    records = Attendance.objects.select_related("user", "project_site").order_by("-check_in_time")[:100]
+    records = Attendance.objects.select_related("user", "project_site").order_by(
+        "-check_in_time"
+    )[:100]
     return render(request, "attendance/admin.html", {"records": records})
 
 
@@ -481,9 +548,13 @@ def admin_attendance(request):
 def attendance_today(request):
     """Filtered view: all check-ins today."""
     today = timezone.localdate()
-    qs = Attendance.objects.filter(
-        check_in_time__date=today,
-    ).select_related("user", "project_site").order_by("-check_in_time")
+    qs = (
+        Attendance.objects.filter(
+            check_in_time__date=today,
+        )
+        .select_related("user", "project_site")
+        .order_by("-check_in_time")
+    )
 
     # Dept Head: restrict to their own department members only
     if request.user.role == "department_head" and not request.user.is_portal_admin():
@@ -492,19 +563,27 @@ def attendance_today(request):
         else:
             qs = qs.none()
 
-    return render(request, "attendance/filtered_list.html", {
-        "records": qs,
-        "filter_title": "Attendance Today",
-        "filter_description": f"All staff who checked in on {today.strftime('%d %b %Y')}.",
-    })
+    return render(
+        request,
+        "attendance/filtered_list.html",
+        {
+            "records": qs,
+            "filter_title": "Attendance Today",
+            "filter_description": f"All staff who checked in on {today.strftime('%d %b %Y')}.",
+        },
+    )
 
 
 @role_required("admin", "program_manager", "department_head")
 def attendance_currently_in(request):
     """Filtered view: staff currently checked in."""
-    qs = Attendance.objects.filter(
-        status=Attendance.Status.CHECKED_IN,
-    ).select_related("user", "project_site").order_by("-check_in_time")
+    qs = (
+        Attendance.objects.filter(
+            status=Attendance.Status.CHECKED_IN,
+        )
+        .select_related("user", "project_site")
+        .order_by("-check_in_time")
+    )
 
     # Dept Head: restrict to their own department only
     if request.user.role == "department_head" and not request.user.is_portal_admin():
@@ -513,26 +592,32 @@ def attendance_currently_in(request):
         else:
             qs = qs.none()
 
-    return render(request, "attendance/filtered_list.html", {
-        "records": qs,
-        "filter_title": "Currently In",
-        "filter_description": "Staff who are currently checked in at the site.",
-    })
+    return render(
+        request,
+        "attendance/filtered_list.html",
+        {
+            "records": qs,
+            "filter_title": "Currently In",
+            "filter_description": "Staff who are currently checked in at the site.",
+        },
+    )
 
 
 @role_required("admin", "program_manager", "department_head")
 def attendance_currently_out(request):
     """Filtered view: active users who have NOT checked in today."""
     from accounts.models import User as PortalUser
+
     today = timezone.localdate()
     checked_in_today_pks = Attendance.objects.filter(
         check_in_time__date=today
     ).values_list("user_id", flat=True)
-    users_out = PortalUser.objects.filter(
-        is_active=True
-    ).exclude(
-        pk__in=checked_in_today_pks
-    ).select_related("department").order_by("first_name", "username")
+    users_out = (
+        PortalUser.objects.filter(is_active=True)
+        .exclude(pk__in=checked_in_today_pks)
+        .select_related("department")
+        .order_by("first_name", "username")
+    )
 
     # Dept Head: restrict to their own department only
     if request.user.role == "department_head" and not request.user.is_portal_admin():
@@ -541,22 +626,30 @@ def attendance_currently_out(request):
         else:
             users_out = users_out.none()
 
-    return render(request, "attendance/currently_out.html", {
-        "users_out": users_out,
-        "filter_title": "Currently Out",
-        "filter_description": f"Active staff who have not checked in today ({today.strftime('%d %b %Y')}).",
-        "today": today,
-    })
+    return render(
+        request,
+        "attendance/currently_out.html",
+        {
+            "users_out": users_out,
+            "filter_title": "Currently Out",
+            "filter_description": f"Active staff who have not checked in today ({today.strftime('%d %b %Y')}).",
+            "today": today,
+        },
+    )
 
 
 @role_required("admin", "program_manager", "department_head")
 def attendance_late_arrivals(request):
     """Filtered view: late arrivals today."""
     today = timezone.localdate()
-    qs = Attendance.objects.filter(
-        check_in_time__date=today,
-        arrival_status=Attendance.ArrivalStatus.LATE,
-    ).select_related("user", "project_site").order_by("-check_in_time")
+    qs = (
+        Attendance.objects.filter(
+            check_in_time__date=today,
+            arrival_status=Attendance.ArrivalStatus.LATE,
+        )
+        .select_related("user", "project_site")
+        .order_by("-check_in_time")
+    )
 
     # Dept Head: restrict to their own department only
     if request.user.role == "department_head" and not request.user.is_portal_admin():
@@ -565,11 +658,15 @@ def attendance_late_arrivals(request):
         else:
             qs = qs.none()
 
-    return render(request, "attendance/filtered_list.html", {
-        "records": qs,
-        "filter_title": "Late Arrivals Today",
-        "filter_description": f"Staff who arrived late on {today.strftime('%d %b %Y')}.",
-    })
+    return render(
+        request,
+        "attendance/filtered_list.html",
+        {
+            "records": qs,
+            "filter_title": "Late Arrivals Today",
+            "filter_description": f"Staff who arrived late on {today.strftime('%d %b %Y')}.",
+        },
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -586,9 +683,10 @@ from .models import GeofenceViolation
 def _notify_management(user, violation):
     """Send an in-app notification to every admin / program-manager."""
     from accounts.models import User as PortalUser
-    managers = PortalUser.objects.filter(
-        role__in=["admin", "program_manager"]
-    ).exclude(pk=user.pk)
+
+    managers = PortalUser.objects.filter(role__in=["admin", "program_manager"]).exclude(
+        pk=user.pk
+    )
     for manager in managers:
         Notification.objects.create(
             user=manager,
@@ -619,7 +717,7 @@ def geofence_ping(request):
         body = json.loads(request.body)
         lat = Decimal(str(body["latitude"]))
         lng = Decimal(str(body["longitude"]))
-    except (KeyError, ValueError, Exception):
+    except KeyError, ValueError, Exception:
         return JsonResponse({"error": "Bad payload"}, status=400)
 
     # Only relevant when user is checked in
@@ -633,7 +731,9 @@ def geofence_ping(request):
     ok, distance = inside_site(lat, lng, site)
 
     if ok:
-        return JsonResponse({"inside": True, "checked_in": True, "distance": round(float(distance), 1)})
+        return JsonResponse(
+            {"inside": True, "checked_in": True, "distance": round(float(distance), 1)}
+        )
 
     # --- User is outside the radius ---
 
@@ -732,8 +832,7 @@ def location_status(request):
 
         # Check if there's already an unresolved LocationLog
         open_log = (
-            LocationLog.objects
-            .filter(user=request.user, turned_on_at__isnull=True)
+            LocationLog.objects.filter(user=request.user, turned_on_at__isnull=True)
             .order_by("-turned_off_at")
             .first()
         )
@@ -746,14 +845,20 @@ def location_status(request):
         # ── Check if grace period has ended → auto-checkout immediately ──────
         site = current_record.project_site
         check_in_local = timezone.localtime(current_record.check_in_time)
-        expected_checkout = scheduled_datetime(check_in_local.date(), site.expected_check_out_time)
+        expected_checkout = scheduled_datetime(
+            check_in_local.date(), site.expected_check_out_time
+        )
         grace_deadline = expected_checkout + timedelta(minutes=site.grace_minutes)
 
         if now >= grace_deadline:
             # Grace period is over and location just went off — auto-checkout now
-            record_close_time = expected_checkout  # record at expected checkout for accurate hours
+            record_close_time = (
+                expected_checkout  # record at expected checkout for accurate hours
+            )
             duration = record_close_time - current_record.check_in_time
-            total_hours = Decimal(str(round(max(duration.total_seconds(), 0) / 3600, 2)))
+            total_hours = Decimal(
+                str(round(max(duration.total_seconds(), 0) / 3600, 2))
+            )
 
             current_record.check_out_time = record_close_time
             current_record.check_out_latitude = current_record.check_in_latitude
@@ -788,6 +893,7 @@ def location_status(request):
 
             # Notify managers
             from accounts.models import User as PortalUser
+
             managers = PortalUser.objects.filter(
                 role__in=["admin", "program_manager"], is_active=True
             ).exclude(pk=request.user.pk)
@@ -818,13 +924,13 @@ def location_status(request):
             return JsonResponse({"ok": True, "tracked": True, "auto_checkout": True})
 
         # Grace period still active — just record the location off event
-        user_title   = "📵 Location Turned Off"
+        user_title = "📵 Location Turned Off"
         user_message = (
             f"Your device location was turned OFF at {now_str}. "
             f"GPS attendance and geofence monitoring are now inactive. "
             f"Please re-enable location to continue attendance tracking."
         )
-        mgr_title   = f"📵 Location Disabled — {user_name}"
+        mgr_title = f"📵 Location Disabled — {user_name}"
         mgr_message = (
             f"{user_name} turned their device location OFF at {now_str}. "
             f"GPS-based attendance and geofence monitoring are inactive until location is re-enabled."
@@ -836,8 +942,7 @@ def location_status(request):
         # Only matters if there was an active session — if not checked in, still close
         # any dangling log from a previous session
         open_log = (
-            LocationLog.objects
-            .filter(user=request.user, turned_on_at__isnull=True)
+            LocationLog.objects.filter(user=request.user, turned_on_at__isnull=True)
             .order_by("-turned_off_at")
             .first()
         )
@@ -846,13 +951,15 @@ def location_status(request):
         if open_log:
             open_log.close()
             duration_str = open_log.duration_display
-            off_time_str = timezone.localtime(open_log.turned_off_at).strftime("%H:%M on %d %b %Y")
+            off_time_str = timezone.localtime(open_log.turned_off_at).strftime(
+                "%H:%M on %d %b %Y"
+            )
 
         # If not checked in, just close the log silently — no notifications needed
         if not current_record and not open_log:
             return JsonResponse({"ok": True, "tracked": False})
 
-        user_title   = "📍 Location Turned On"
+        user_title = "📍 Location Turned On"
         if off_time_str and duration_str:
             user_message = (
                 f"Your device location was turned ON again at {now_str}. "
@@ -874,19 +981,25 @@ def location_status(request):
                 f"GPS monitoring has resumed."
             )
         mgr_title = f"📍 Location Re-enabled — {user_name}"
-        priority  = "medium"
+        priority = "medium"
 
     # Notify the user
-    notify_attendance(request.user, user_title, user_message, priority=priority, link="/attendance/")
+    notify_attendance(
+        request.user, user_title, user_message, priority=priority, link="/attendance/"
+    )
 
     # Notify all admins / program managers
     from accounts.models import User as PortalUser
+
     managers = PortalUser.objects.filter(
         role__in=["admin", "program_manager"], is_active=True
     ).exclude(pk=request.user.pk)
     for manager in managers:
         Notification.objects.create(
-            user=manager, title=mgr_title, message=mgr_message, priority=priority,
+            user=manager,
+            title=mgr_title,
+            message=mgr_message,
+            priority=priority,
             link="/attendance/admin/",
         )
 
@@ -907,6 +1020,7 @@ def my_location_timeout(request):
     Only meaningful when the user is checked in at a site — show a notice otherwise.
     """
     from .models import LocationLog
+
     # Check if user is currently checked in
     current_session = Attendance.objects.filter(
         user=request.user, status=Attendance.Status.CHECKED_IN
@@ -920,16 +1034,21 @@ def my_location_timeout(request):
     resolved = [l for l in logs if l.turned_on_at is not None]
     avg_mins = (
         sum(float(l.duration_minutes) for l in resolved) / len(resolved)
-        if resolved else 0
+        if resolved
+        else 0
     )
-    return render(request, "attendance/my_location_timeout.html", {
-        "logs": logs,
-        "total_events": total_events,
-        "resolved_count": len(resolved),
-        "avg_mins": round(avg_mins, 1),
-        "current_session": current_session,
-        "has_any_attendance": has_any_attendance,
-    })
+    return render(
+        request,
+        "attendance/my_location_timeout.html",
+        {
+            "logs": logs,
+            "total_events": total_events,
+            "resolved_count": len(resolved),
+            "avg_mins": round(avg_mins, 1),
+            "current_session": current_session,
+            "has_any_attendance": has_any_attendance,
+        },
+    )
 
 
 @login_required
@@ -937,16 +1056,23 @@ def location_timeout_report(request, fmt):
     """Download own location timeout history as PDF or Excel."""
     from .models import LocationLog
     from core.reports import excel_response, pdf_response
+
     logs = LocationLog.objects.filter(user=request.user).order_by("-turned_off_at")
     headers = ["Turned Off At", "Turned On At", "Duration Off", "Status"]
     rows = []
     for log in logs:
-        rows.append([
-            timezone.localtime(log.turned_off_at).strftime("%d %b %Y %H:%M"),
-            timezone.localtime(log.turned_on_at).strftime("%d %b %Y %H:%M") if log.turned_on_at else "Still Off",
-            log.duration_display,
-            "Resolved" if log.turned_on_at else "Location Still Off",
-        ])
+        rows.append(
+            [
+                timezone.localtime(log.turned_off_at).strftime("%d %b %Y %H:%M"),
+                (
+                    timezone.localtime(log.turned_on_at).strftime("%d %b %Y %H:%M")
+                    if log.turned_on_at
+                    else "Still Off"
+                ),
+                log.duration_display,
+                "Resolved" if log.turned_on_at else "Location Still Off",
+            ]
+        )
     fname = f"location-timeout-{request.user.username}"
     title = f"Location Timeout Report — {request.user.get_full_name() or request.user.username}"
     if fmt == "xlsx":
@@ -957,30 +1083,50 @@ def location_timeout_report(request, fmt):
 @role_required("admin", "program_manager")
 def geofence_violations(request):
     """Management view: list all geofence violations."""
-    violations = GeofenceViolation.objects.select_related("user", "project_site", "attendance").order_by("-detected_at")[:200]
-    return render(request, "attendance/geofence_violations.html", {"violations": violations})
+    violations = GeofenceViolation.objects.select_related(
+        "user", "project_site", "attendance"
+    ).order_by("-detected_at")[:200]
+    return render(
+        request, "attendance/geofence_violations.html", {"violations": violations}
+    )
 
 
 @role_required("admin", "program_manager")
 def geofence_violations_report(request, fmt):
     """Download all geofence violations as PDF or Excel."""
     from core.reports import excel_response, pdf_response
-    violations = GeofenceViolation.objects.select_related("user", "project_site").order_by("-detected_at")
-    headers = ["#", "Staff Member", "Email", "Site", "Detected At", "Distance (m)", "Allowed (m)", "Status", "Mgmt Alerted", "Notes"]
+
+    violations = GeofenceViolation.objects.select_related(
+        "user", "project_site"
+    ).order_by("-detected_at")
+    headers = [
+        "#",
+        "Staff Member",
+        "Email",
+        "Site",
+        "Detected At",
+        "Distance (m)",
+        "Allowed (m)",
+        "Status",
+        "Mgmt Alerted",
+        "Notes",
+    ]
     rows = []
     for v in violations:
-        rows.append([
-            v.pk,
-            v.user.get_full_name() or v.user.username,
-            v.user.email,
-            v.project_site.name,
-            timezone.localtime(v.detected_at).strftime("%d %b %Y %H:%M"),
-            f"{v.distance_meters:.0f}",
-            v.project_site.radius_meters,
-            v.get_resolution_display(),
-            "Yes" if v.management_alerted else "No",
-            v.notes or "—",
-        ])
+        rows.append(
+            [
+                v.pk,
+                v.user.get_full_name() or v.user.username,
+                v.user.email,
+                v.project_site.name,
+                timezone.localtime(v.detected_at).strftime("%d %b %Y %H:%M"),
+                f"{v.distance_meters:.0f}",
+                v.project_site.radius_meters,
+                v.get_resolution_display(),
+                "Yes" if v.management_alerted else "No",
+                v.notes or "—",
+            ]
+        )
     fname = "geofence-violations-report"
     title = "Geofence Violations Report"
     if fmt == "xlsx":
@@ -993,12 +1139,17 @@ def user_location_log(request, user_pk):
     """Per-user location on/off history — Admin and PM only."""
     from accounts.models import User as PortalUser
     from .models import LocationLog
+
     target = get_object_or_404(PortalUser, pk=user_pk)
     logs = LocationLog.objects.filter(user=target).order_by("-turned_off_at")[:60]
-    return render(request, "attendance/location_log.html", {
-        "target": target,
-        "logs": logs,
-    })
+    return render(
+        request,
+        "attendance/location_log.html",
+        {
+            "target": target,
+            "logs": logs,
+        },
+    )
 
 
 @role_required("admin", "program_manager")
@@ -1008,16 +1159,17 @@ def all_location_activity(request):
     Admin and PM only — Dept Head cannot view org-wide location activity.
     """
     from .models import LocationLog
-    logs = (
-        LocationLog.objects
-        .select_related("user")
-        .order_by("-turned_off_at")[:200]
-    )
+
+    logs = LocationLog.objects.select_related("user").order_by("-turned_off_at")[:200]
     unresolved_count = LocationLog.objects.filter(turned_on_at__isnull=True).count()
-    return render(request, "attendance/all_location_activity.html", {
-        "logs": logs,
-        "unresolved_count": unresolved_count,
-    })
+    return render(
+        request,
+        "attendance/all_location_activity.html",
+        {
+            "logs": logs,
+            "unresolved_count": unresolved_count,
+        },
+    )
 
 
 @login_required
@@ -1028,11 +1180,11 @@ def location_off_status_api(request):
     Restricted to Admin and PM only; Dept Head and below get empty list.
     """
     from .models import LocationLog
+
     if not request.user.can_view_location_activity():
         return JsonResponse({"count": 0, "users": []})
     logs = (
-        LocationLog.objects
-        .filter(turned_on_at__isnull=True)
+        LocationLog.objects.filter(turned_on_at__isnull=True)
         .select_related("user")
         .order_by("-turned_off_at")
     )
@@ -1058,8 +1210,6 @@ def acknowledge_violation(request, pk):
     return redirect("attendance:geofence_violations")
 
 
-
-
 @role_required("admin", "program_manager", "department_head")
 def missed_checkout(request):
     """
@@ -1073,8 +1223,7 @@ def missed_checkout(request):
 
     # Collect (user_id, check_in_date) from activity log entries
     auto_log_qs = (
-        ActivityLog.objects
-        .filter(action="auto_checkout_forgot")
+        ActivityLog.objects.filter(action="auto_checkout_forgot")
         .select_related("user")
         .order_by("-timestamp")[:500]
     )
@@ -1090,8 +1239,7 @@ def missed_checkout(request):
         for user_id, date_str in auto_keys:
             q |= Q(user_id=user_id, check_in_time__date=date_str)
         records = (
-            Attendance.objects
-            .filter(q)
+            Attendance.objects.filter(q)
             .select_related("user", "project_site")
             .order_by("-check_in_time")[:200]
         )
@@ -1106,13 +1254,17 @@ def missed_checkout(request):
     ).count()
     total_count = ActivityLog.objects.filter(action="auto_checkout_forgot").count()
 
-    return render(request, "attendance/missed_checkout.html", {
-        "records": records,
-        "monthly_count": monthly_count,
-        "total_count": total_count,
-        "filter_title": "Missed Checkout",
-        "filter_description": "Staff who forgot to check out and were automatically logged out at the site deadline.",
-    })
+    return render(
+        request,
+        "attendance/missed_checkout.html",
+        {
+            "records": records,
+            "monthly_count": monthly_count,
+            "total_count": total_count,
+            "filter_title": "Missed Checkout",
+            "filter_description": "Staff who forgot to check out and were automatically logged out at the site deadline.",
+        },
+    )
 
 
 @role_required("admin", "program_manager", "department_head")
@@ -1123,8 +1275,7 @@ def missed_checkout_report(request, fmt):
     from core.reports import excel_response, pdf_response
 
     auto_log_qs = (
-        ActivityLog.objects
-        .filter(action="auto_checkout_forgot")
+        ActivityLog.objects.filter(action="auto_checkout_forgot")
         .select_related("user")
         .order_by("-timestamp")[:500]
     )
@@ -1140,26 +1291,39 @@ def missed_checkout_report(request, fmt):
         for user_id, date_str in auto_keys:
             q |= Q(user_id=user_id, check_in_time__date=date_str)
         records = (
-            Attendance.objects
-            .filter(q)
+            Attendance.objects.filter(q)
             .select_related("user", "project_site")
             .order_by("-check_in_time")
         )
     else:
         records = Attendance.objects.none()
 
-    headers = ["Staff Member", "Email", "Date", "Check In", "Auto Check-Out", "Hours", "Site"]
+    headers = [
+        "Staff Member",
+        "Email",
+        "Date",
+        "Check In",
+        "Auto Check-Out",
+        "Hours",
+        "Site",
+    ]
     rows = []
     for rec in records:
-        rows.append([
-            rec.user.get_full_name() or rec.user.username,
-            rec.user.email,
-            rec.check_in_time.strftime("%d %b %Y"),
-            timezone.localtime(rec.check_in_time).strftime("%H:%M"),
-            timezone.localtime(rec.check_out_time).strftime("%H:%M") if rec.check_out_time else "—",
-            str(rec.total_hours) + "h" if rec.total_hours else "—",
-            rec.project_site.name,
-        ])
+        rows.append(
+            [
+                rec.user.get_full_name() or rec.user.username,
+                rec.user.email,
+                rec.check_in_time.strftime("%d %b %Y"),
+                timezone.localtime(rec.check_in_time).strftime("%H:%M"),
+                (
+                    timezone.localtime(rec.check_out_time).strftime("%H:%M")
+                    if rec.check_out_time
+                    else "—"
+                ),
+                str(rec.total_hours) + "h" if rec.total_hours else "—",
+                rec.project_site.name,
+            ]
+        )
 
     fname = "missed-checkout-report"
     title = "Missed Checkout Report"
@@ -1170,23 +1334,30 @@ def missed_checkout_report(request, fmt):
 
 # ── Mobile GPS Check-in page ─────────────────────────────────────────────────
 
+
 @login_required
 def mobile_checkin(request):
     """Standalone mobile-optimised GPS check-in / check-out page."""
     auto_checkout_stale_sessions()
     today = timezone.localdate()
     now_dt = timezone.now()
-    current = Attendance.objects.filter(user=request.user, status=Attendance.Status.CHECKED_IN).first()
+    current = Attendance.objects.filter(
+        user=request.user, status=Attendance.Status.CHECKED_IN
+    ).first()
     already_done_today = (not current) and Attendance.objects.filter(
         user=request.user,
         check_in_time__date=today,
         status=Attendance.Status.CHECKED_OUT,
     ).exists()
     sites = list(active_sites())
-    return render(request, "attendance/mobile_checkin.html", {
-        "current": current,
-        "sites": sites,
-        "already_done_today": already_done_today,
-        "check_in_url":  "/attendance/check-in/",
-        "check_out_url": "/attendance/check-out/",
-    })
+    return render(
+        request,
+        "attendance/mobile_checkin.html",
+        {
+            "current": current,
+            "sites": sites,
+            "already_done_today": already_done_today,
+            "check_in_url": "/attendance/check-in/",
+            "check_out_url": "/attendance/check-out/",
+        },
+    )

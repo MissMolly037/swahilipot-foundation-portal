@@ -16,9 +16,9 @@ All functions accept an optional ``priority`` keyword argument.
 from communication.models import Notification
 from accounts.models import User
 
-LOW      = Notification.Priority.LOW
-MEDIUM   = Notification.Priority.MEDIUM
-HIGH     = Notification.Priority.HIGH
+LOW = Notification.Priority.LOW
+MEDIUM = Notification.Priority.MEDIUM
+HIGH = Notification.Priority.HIGH
 CRITICAL = Notification.Priority.CRITICAL
 
 
@@ -26,13 +26,16 @@ def _push(user, title, message, priority=LOW, link=""):
     """Fire-and-forget web push — never raises."""
     try:
         from communication.push import send_push
+
         send_push(user, title=title, body=message, link=link or "/", priority=priority)
     except Exception:
         pass
 
 
 def notify_user(user, title, message, priority=LOW, link=""):
-    Notification.objects.create(user=user, title=title, message=message, priority=priority, link=link)
+    Notification.objects.create(
+        user=user, title=title, message=message, priority=priority, link=link
+    )
     _push(user, title, message, priority=priority, link=link)
 
 
@@ -41,28 +44,37 @@ def notify_all(title, message, exclude_pk=None, priority=LOW, link=""):
     qs = User.objects.filter(is_active=True)
     if exclude_pk:
         qs = qs.exclude(pk=exclude_pk)
-    bulk = [Notification(user=u, title=title, message=message, priority=priority, link=link) for u in qs]
+    bulk = [
+        Notification(user=u, title=title, message=message, priority=priority, link=link)
+        for u in qs
+    ]
     Notification.objects.bulk_create(bulk, ignore_conflicts=True)
     try:
         from communication.push import send_push_bulk
-        send_push_bulk(qs, title=title, body=message, link=link or "/", priority=priority)
+
+        send_push_bulk(
+            qs, title=title, body=message, link=link or "/", priority=priority
+        )
     except Exception:
         pass
 
 
 def notify_managers(title, message, exclude_pk=None, priority=LOW, link=""):
     """Send to admins and program managers only."""
-    qs = User.objects.filter(
-        is_active=True,
-        role__in=["admin", "program_manager"]
-    )
+    qs = User.objects.filter(is_active=True, role__in=["admin", "program_manager"])
     if exclude_pk:
         qs = qs.exclude(pk=exclude_pk)
-    bulk = [Notification(user=u, title=title, message=message, priority=priority, link=link) for u in qs]
+    bulk = [
+        Notification(user=u, title=title, message=message, priority=priority, link=link)
+        for u in qs
+    ]
     Notification.objects.bulk_create(bulk, ignore_conflicts=True)
     try:
         from communication.push import send_push_bulk
-        send_push_bulk(qs, title=title, body=message, link=link or "/", priority=priority)
+
+        send_push_bulk(
+            qs, title=title, body=message, link=link or "/", priority=priority
+        )
     except Exception:
         pass
 
@@ -72,10 +84,16 @@ def notify_dept(department, title, message, exclude_pk=None, priority=LOW, link=
     qs = User.objects.filter(is_active=True, department=department)
     if exclude_pk:
         qs = qs.exclude(pk=exclude_pk)
-    bulk = [Notification(user=u, title=title, message=message, priority=priority, link=link) for u in qs]
+    bulk = [
+        Notification(user=u, title=title, message=message, priority=priority, link=link)
+        for u in qs
+    ]
     Notification.objects.bulk_create(bulk, ignore_conflicts=True)
     try:
         from communication.push import send_push_bulk
-        send_push_bulk(qs, title=title, body=message, link=link or "/", priority=priority)
+
+        send_push_bulk(
+            qs, title=title, body=message, link=link or "/", priority=priority
+        )
     except Exception:
         pass

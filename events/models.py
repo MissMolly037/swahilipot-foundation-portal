@@ -25,7 +25,7 @@ def build_form_url(event):
     if not base_url:
         return ""
 
-    event_id_field   = _get_form_setting("GOOGLE_FORM_EVENT_ID_FIELD")
+    event_id_field = _get_form_setting("GOOGLE_FORM_EVENT_ID_FIELD")
     event_name_field = _get_form_setting("GOOGLE_FORM_EVENT_NAME_FIELD")
 
     # Strip any existing query string from the base URL so we always build cleanly
@@ -50,12 +50,18 @@ class Event(models.Model):
     banner = models.FileField(upload_to="event_banners/", blank=True, null=True)
 
     # Venue GPS coordinates — set when creating the event so geofence check-in works.
-    venue_latitude  = models.DecimalField(
-        max_digits=10, decimal_places=7, null=True, blank=True,
+    venue_latitude = models.DecimalField(
+        max_digits=10,
+        decimal_places=7,
+        null=True,
+        blank=True,
         help_text="Venue GPS latitude — required for geofence check-in enforcement.",
     )
     venue_longitude = models.DecimalField(
-        max_digits=10, decimal_places=7, null=True, blank=True,
+        max_digits=10,
+        decimal_places=7,
+        null=True,
+        blank=True,
         help_text="Venue GPS longitude — required for geofence check-in enforcement.",
     )
     venue_radius_meters = models.PositiveIntegerField(
@@ -64,8 +70,8 @@ class Event(models.Model):
     )
 
     # Legacy QR fields — kept so existing DB data / migrations are not broken.
-    qr_code  = models.FileField(upload_to="event_qr/", blank=True, null=True)
-    qr_uuid  = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    qr_code = models.FileField(upload_to="event_qr/", blank=True, null=True)
+    qr_uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
 
     # Stored pre-filled Google Form URL (updated on every save if configured)
     google_form_url = models.URLField(
@@ -119,7 +125,9 @@ class Event(models.Model):
         new_url = build_form_url(self)
         if new_url and new_url != self.google_form_url:
             self.google_form_url = new_url
-            Event.objects.filter(pk=self.pk).update(google_form_url=self.google_form_url)
+            Event.objects.filter(pk=self.pk).update(
+                google_form_url=self.google_form_url
+            )
 
 
 class FormResponse(models.Model):
@@ -128,16 +136,16 @@ class FormResponse(models.Model):
     Created when a user submits the portal registration form, or when
     the Google Apps Script webhook fires after a Google Form submission.
     """
+
     event = models.ForeignKey(
         Event, on_delete=models.CASCADE, related_name="form_responses"
     )
     submitted_at = models.DateTimeField(default=timezone.now)
-    respondent_name  = models.CharField(max_length=220, blank=True)
+    respondent_name = models.CharField(max_length=220, blank=True)
     respondent_email = models.CharField(max_length=254, blank=True)
     respondent_phone = models.CharField(max_length=50, blank=True)
     raw_data = models.JSONField(
-        default=dict, blank=True,
-        help_text="Full submission payload."
+        default=dict, blank=True, help_text="Full submission payload."
     )
 
     class Meta:
@@ -150,9 +158,14 @@ class FormResponse(models.Model):
 
 class EventRegistration(models.Model):
     """Portal-user registration record (one per user per event, permanent)."""
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="registrations")
+
+    event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name="registrations"
+    )
     participant = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="event_registrations"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="event_registrations",
     )
     registration_date = models.DateTimeField(auto_now_add=True)
 
@@ -162,9 +175,14 @@ class EventRegistration(models.Model):
 
 class EventAttendance(models.Model):
     """Legacy model — kept for backward-compat with existing data."""
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="attendance")
+
+    event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name="attendance"
+    )
     participant = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="event_attendance"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="event_attendance",
     )
     timestamp = models.DateTimeField(auto_now_add=True)
 
@@ -178,16 +196,21 @@ class EventCheckIn(models.Model):
     Created when the user is at the event location and taps 'Check In'.
     This is the attendance record — separate from registration.
     """
+
     event = models.ForeignKey(
         Event, on_delete=models.CASCADE, related_name="event_checkins"
     )
     participant = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="event_checkins"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="event_checkins",
     )
-    checked_in_at   = models.DateTimeField(default=timezone.now)
-    latitude        = models.DecimalField(max_digits=10, decimal_places=7)
-    longitude       = models.DecimalField(max_digits=10, decimal_places=7)
-    distance_meters = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0"))
+    checked_in_at = models.DateTimeField(default=timezone.now)
+    latitude = models.DecimalField(max_digits=10, decimal_places=7)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7)
+    distance_meters = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("0")
+    )
 
     class Meta:
         unique_together = ("event", "participant")

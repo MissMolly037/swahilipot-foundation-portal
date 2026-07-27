@@ -44,10 +44,7 @@ if not SECRET_KEY:
 # Allowed Hosts
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.getenv(
-        "DJANGO_ALLOWED_HOSTS",
-        "127.0.0.1,localhost"
-    ).split(",")
+    for host in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
     if host.strip()
 ]
 
@@ -55,11 +52,13 @@ ALLOWED_HOSTS = [
 ALLOWED_HOSTS.append("oppose-shrink-speed.ngrok-free.dev")
 
 # Local development
-ALLOWED_HOSTS.extend([
-    "127.0.0.1",
-    "localhost",
-    "0.0.0.0",
-])
+ALLOWED_HOSTS.extend(
+    [
+        "127.0.0.1",
+        "localhost",
+        "0.0.0.0",
+    ]
+)
 
 # Remove duplicate entries
 ALLOWED_HOSTS = list(dict.fromkeys(ALLOWED_HOSTS))
@@ -110,29 +109,42 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
-        "OPTIONS": {"context_processors": [
-            "django.template.context_processors.debug",
-            "django.template.context_processors.request",
-            "django.contrib.auth.context_processors.auth",
-            "django.contrib.messages.context_processors.messages",
-            "communication.context_processors.unread_notifications",
-            "core.context_processors.site_settings",
-        ]},
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "communication.context_processors.unread_notifications",
+                "core.context_processors.site_settings",
+            ]
+        },
     }
 ]
 
 WSGI_APPLICATION = "swahilipot_portal.wsgi.application"
 
 if dj_database_url:
-    DATABASES = {"default": dj_database_url.config(default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}", conn_max_age=600)}
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}", conn_max_age=600
+        )
+    }
 else:
-    DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 AUTH_USER_MODEL = "accounts.User"
 
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-     "OPTIONS": {"min_length": 8}},
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 8},
+    },
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
@@ -176,17 +188,18 @@ LOGOUT_REDIRECT_URL = "login"
 #   - Copy the link from the terminal and paste it into your browser to
 #     complete the password reset — it works exactly like a real email.
 #
-_email_user     = os.getenv("DJANGO_EMAIL_HOST_USER", "").strip()
+_email_user = os.getenv("DJANGO_EMAIL_HOST_USER", "").strip()
 _email_password = os.getenv("DJANGO_EMAIL_HOST_PASSWORD", "").strip()
 
-EMAIL_HOST          = "smtp.gmail.com"
-EMAIL_PORT          = 587
-EMAIL_USE_TLS       = True
-EMAIL_USE_SSL       = False
-EMAIL_HOST_USER     = _email_user
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = _email_user
 EMAIL_HOST_PASSWORD = _email_password
-DEFAULT_FROM_EMAIL  = (
-    f"Swahilipot Hub Portal <{_email_user}>" if _email_user
+DEFAULT_FROM_EMAIL = (
+    f"Swahilipot Hub Portal <{_email_user}>"
+    if _email_user
     else "Swahilipot Hub Portal <noreply@swahilipothub.co.ke>"
 )
 SERVER_EMAIL = _email_user or "noreply@swahilipothub.co.ke"
@@ -247,20 +260,20 @@ SITE_BASE_URL = os.getenv("DJANGO_SITE_BASE_URL", "http://127.0.0.1:8000").rstri
 #
 # GOOGLE_FORM_EVENT_NAME_FIELD  — entry.YYYYYYYYY for an "Event Name" question (optional)
 #
-GOOGLE_FORM_BASE_URL         = os.getenv("GOOGLE_FORM_BASE_URL", "").strip()
-GOOGLE_FORM_EVENT_ID_FIELD   = os.getenv("GOOGLE_FORM_EVENT_ID_FIELD", "").strip()
+GOOGLE_FORM_BASE_URL = os.getenv("GOOGLE_FORM_BASE_URL", "").strip()
+GOOGLE_FORM_EVENT_ID_FIELD = os.getenv("GOOGLE_FORM_EVENT_ID_FIELD", "").strip()
 GOOGLE_FORM_EVENT_NAME_FIELD = os.getenv("GOOGLE_FORM_EVENT_NAME_FIELD", "").strip()
 
 # ── Web Push (VAPID) ──────────────────────────────────────────────────────────
-VAPID_PUBLIC_KEY  = os.getenv("VAPID_PUBLIC_KEY", "")
-VAPID_MAILTO      = os.getenv("VAPID_MAILTO", "admin@swahilipothub.co.ke")
+VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY", "")
+VAPID_MAILTO = os.getenv("VAPID_MAILTO", "admin@swahilipothub.co.ke")
 
 # ── Production security hardening (only when DEBUG=False) ─────────────────────
 # Replit's proxy already handles HTTPS/TLS so we do NOT set SECURE_SSL_REDIRECT
 # (it would cause infinite redirect loops behind the proxy).
 if not DEBUG:
-    SESSION_COOKIE_SECURE       = True
-    CSRF_COOKIE_SECURE          = True
-    SECURE_HSTS_SECONDS         = 31536000        # 1 year
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_CONTENT_TYPE_NOSNIFF = True

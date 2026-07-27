@@ -7,7 +7,13 @@ from accounts.models import Department, User
 from core.permissions import capability_required, role_required
 from core.notify import notify_all, notify_user, notify_dept
 from .forms import AnnouncementForm, ChannelForm, ChannelMessageForm, DirectMessageForm
-from .models import Announcement, DepartmentChannel, ChannelMessage, DirectMessage, Notification
+from .models import (
+    Announcement,
+    DepartmentChannel,
+    ChannelMessage,
+    DirectMessage,
+    Notification,
+)
 
 
 @login_required
@@ -23,18 +29,26 @@ def home(request):
     else:
         channels = DepartmentChannel.objects.none()
 
-    messages_qs = DirectMessage.objects.filter(
-        Q(sender=user) | Q(receiver=user)
-    ).select_related("sender", "receiver").order_by("-timestamp")[:20]
-    dm_form = DirectMessageForm(receiver_queryset=User.objects.filter(
-        is_active=True
-    ).exclude(pk=user.pk).order_by("first_name", "username"))
-    return render(request, "communication/home.html", {
-        "announcements":   announcements,
-        "channels":        channels,
-        "direct_messages": messages_qs,
-        "dm_form":         dm_form,
-    })
+    messages_qs = (
+        DirectMessage.objects.filter(Q(sender=user) | Q(receiver=user))
+        .select_related("sender", "receiver")
+        .order_by("-timestamp")[:20]
+    )
+    dm_form = DirectMessageForm(
+        receiver_queryset=User.objects.filter(is_active=True)
+        .exclude(pk=user.pk)
+        .order_by("first_name", "username")
+    )
+    return render(
+        request,
+        "communication/home.html",
+        {
+            "announcements": announcements,
+            "channels": channels,
+            "direct_messages": messages_qs,
+            "dm_form": dm_form,
+        },
+    )
 
 
 @capability_required("can_publish_announcements")
@@ -66,7 +80,9 @@ def channel_create(request):
         form.save()
         messages.success(request, "Channel created.")
         return redirect("communication:home")
-    return render(request, "form.html", {"form": form, "title": "Create Department Channel"})
+    return render(
+        request, "form.html", {"form": form, "title": "Create Department Channel"}
+    )
 
 
 @role_required("admin")
@@ -90,13 +106,15 @@ def channel(request, pk):
         return redirect("communication:home")
 
     # Paginate messages — show last 100
-    channel_messages = channel_obj.messages.select_related("sender").order_by("timestamp")[:100]
+    channel_messages = channel_obj.messages.select_related("sender").order_by(
+        "timestamp"
+    )[:100]
 
     form = ChannelMessageForm(request.POST or None, request.FILES or None)
     if request.method == "POST" and form.is_valid():
         msg = form.save(commit=False)
         msg.channel = channel_obj
-        msg.sender  = user
+        msg.sender = user
         msg.save()
         if channel_obj.department:
             notify_dept(
@@ -108,11 +126,15 @@ def channel(request, pk):
             )
         return redirect("communication:channel", pk=pk)
 
-    return render(request, "communication/channel.html", {
-        "channel": channel_obj,
-        "channel_messages": channel_messages,
-        "form": form,
-    })
+    return render(
+        request,
+        "communication/channel.html",
+        {
+            "channel": channel_obj,
+            "channel_messages": channel_messages,
+            "form": form,
+        },
+    )
 
 
 @login_required
@@ -130,7 +152,7 @@ def send_direct(request):
         notify_user(
             dm.receiver,
             f"New message from {user.get_full_name() or user.username}",
-           f'{user} sent you a message: "{dm.message[:100]}"',
+            f'{user} sent you a message: "{dm.message[:100]}"',
             link="/communication/",
         )
         messages.success(request, "Message sent.")
@@ -156,12 +178,24 @@ def notification_redirect(request, pk):
     # ── Infer destination from title when link is blank ──────────────────
     if not destination:
         title_lower = notif.title.lower()
-        if any(w in title_lower for w in ("event", "registered for", "attendance recorded")):
+        if any(
+            w in title_lower for w in ("event", "registered for", "attendance recorded")
+        ):
             destination = "/events/"
         elif any(w in title_lower for w in ("task", "comment on task", "attachment")):
             destination = "/tasks/"
-        elif any(w in title_lower for w in ("check-in", "check-out", "check in", "check out",
-                                             "auto check", "geofence", "location")):
+        elif any(
+            w in title_lower
+            for w in (
+                "check-in",
+                "check-out",
+                "check in",
+                "check out",
+                "auto check",
+                "geofence",
+                "location",
+            )
+        ):
             destination = "/attendance/"
         elif any(w in title_lower for w in ("message", "announcement", "channel")):
             destination = "/communication/"
@@ -197,11 +231,13 @@ def notifications(request):
             if p in priorities_present:
                 highest = p
                 break
-        return JsonResponse({
-            "total": user_notifs.count(),
-            "unread": unread_qs.count(),
-            "highest_priority": highest,
-        })
+        return JsonResponse(
+            {
+                "total": user_notifs.count(),
+                "unread": unread_qs.count(),
+                "highest_priority": highest,
+            }
+        )
 
     if request.method == "POST":
         user_notifs.update(read=True)
@@ -209,10 +245,14 @@ def notifications(request):
     notif_list = user_notifs[:50]
     unread_count = user_notifs.filter(read=False).count()
 
-    return render(request, "communication/notifications.html", {
-        "notifications": notif_list,
-        "unread_count": unread_count,
-    })
+    return render(
+        request,
+        "communication/notifications.html",
+        {
+            "notifications": notif_list,
+            "unread_count": unread_count,
+        },
+    )
 
 
 # ── Web Push subscription endpoints ──────────────────────────────────────────
@@ -234,13 +274,14 @@ def push_subscribe(request):
     if request.method != "POST":
         return JsonResponse({"error": "POST required"}, status=405)
     from .models import PushSubscription
+
     try:
         data = _json.loads(request.body)
         endpoint = data["endpoint"]
-        keys     = data["keys"]
-        p256dh   = keys["p256dh"]
-        auth     = keys["auth"]
-    except (KeyError, ValueError, TypeError):
+        keys = data["keys"]
+        p256dh = keys["p256dh"]
+        auth = keys["auth"]
+    except KeyError, ValueError, TypeError:
         return JsonResponse({"error": "Invalid subscription data"}, status=400)
 
     sub, created = PushSubscription.objects.update_or_create(
@@ -256,10 +297,11 @@ def push_unsubscribe(request):
     if request.method != "POST":
         return JsonResponse({"error": "POST required"}, status=405)
     from .models import PushSubscription
+
     try:
-        data     = _json.loads(request.body)
+        data = _json.loads(request.body)
         endpoint = data["endpoint"]
-    except (KeyError, ValueError, TypeError):
+    except KeyError, ValueError, TypeError:
         return JsonResponse({"error": "Invalid data"}, status=400)
 
     PushSubscription.objects.filter(user=request.user, endpoint=endpoint).delete()
@@ -270,6 +312,7 @@ def push_unsubscribe(request):
 def push_send_test(request):
     """Send a test push notification to the current user (admin only)."""
     from .push import send_push
+
     send_push(
         request.user,
         title="🔔 Test Notification",

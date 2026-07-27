@@ -34,18 +34,34 @@ class Attendance(models.Model):
         ON_TIME = "on_time", "On Time"
         LEFT_LATE = "left_late", "Left Late"
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="attendance_records")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="attendance_records",
+    )
     project_site = models.ForeignKey(ProjectSite, on_delete=models.PROTECT)
     check_in_time = models.DateTimeField(default=timezone.now)
     check_out_time = models.DateTimeField(blank=True, null=True)
     check_in_latitude = models.DecimalField(max_digits=10, decimal_places=7)
     check_in_longitude = models.DecimalField(max_digits=10, decimal_places=7)
-    check_out_latitude = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True)
-    check_out_longitude = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True)
-    total_hours = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("0.00"))
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.CHECKED_IN)
-    arrival_status = models.CharField(max_length=20, choices=ArrivalStatus.choices, blank=True)
-    departure_status = models.CharField(max_length=20, choices=DepartureStatus.choices, blank=True)
+    check_out_latitude = models.DecimalField(
+        max_digits=10, decimal_places=7, blank=True, null=True
+    )
+    check_out_longitude = models.DecimalField(
+        max_digits=10, decimal_places=7, blank=True, null=True
+    )
+    total_hours = models.DecimalField(
+        max_digits=8, decimal_places=2, default=Decimal("0.00")
+    )
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.CHECKED_IN
+    )
+    arrival_status = models.CharField(
+        max_length=20, choices=ArrivalStatus.choices, blank=True
+    )
+    departure_status = models.CharField(
+        max_length=20, choices=DepartureStatus.choices, blank=True
+    )
 
     class Meta:
         ordering = ("-check_in_time",)
@@ -55,7 +71,9 @@ class Attendance(models.Model):
         self.check_out_latitude = latitude
         self.check_out_longitude = longitude
         duration = self.check_out_time - self.check_in_time
-        self.total_hours = Decimal(duration.total_seconds() / 3600).quantize(Decimal("0.01"))
+        self.total_hours = Decimal(duration.total_seconds() / 3600).quantize(
+            Decimal("0.01")
+        )
         self.status = self.Status.CHECKED_OUT
         self.save()
 
@@ -64,7 +82,9 @@ class Attendance(models.Model):
 
 
 class ActivityLog(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
     action = models.CharField(max_length=80)
     description = models.TextField(blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -86,17 +106,25 @@ class GeofenceViolation(models.Model):
         DISMISSED = "dismissed", "Dismissed"
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="geofence_violations"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="geofence_violations",
     )
     attendance = models.ForeignKey(
-        "Attendance", on_delete=models.CASCADE, related_name="violations", null=True, blank=True
+        "Attendance",
+        on_delete=models.CASCADE,
+        related_name="violations",
+        null=True,
+        blank=True,
     )
     project_site = models.ForeignKey(ProjectSite, on_delete=models.PROTECT)
     detected_at = models.DateTimeField(default=timezone.now)
     latitude = models.DecimalField(max_digits=10, decimal_places=7)
     longitude = models.DecimalField(max_digits=10, decimal_places=7)
     distance_meters = models.DecimalField(max_digits=10, decimal_places=2)
-    resolution = models.CharField(max_length=20, choices=Resolution.choices, default=Resolution.OPEN)
+    resolution = models.CharField(
+        max_length=20, choices=Resolution.choices, default=Resolution.OPEN
+    )
     management_alerted = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
 
@@ -113,14 +141,18 @@ class LocationLog(models.Model):
     When location is turned back ON, turned_on_at is filled in and
     duration_minutes is calculated automatically.
     """
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="location_logs"
     )
     turned_off_at = models.DateTimeField(default=timezone.now)
     turned_on_at = models.DateTimeField(null=True, blank=True)
     duration_minutes = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True,
-        help_text="Minutes location was off (filled when turned back on)"
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Minutes location was off (filled when turned back on)",
     )
 
     class Meta:

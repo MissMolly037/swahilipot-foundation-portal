@@ -33,9 +33,7 @@ capture_output = True
 # Proxy / HTTPS
 # =============================================================================
 forwarded_allow_ips = "*"
-secure_scheme_headers = {
-    "X-Forwarded-Proto": "https"
-}
+secure_scheme_headers = {"X-Forwarded-Proto": "https"}
 
 # =============================================================================
 # Process naming

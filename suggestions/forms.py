@@ -12,4 +12,3 @@ class SuggestionReviewForm(forms.ModelForm):
     class Meta:
         model = Suggestion
         fields = ("status", "response")
-

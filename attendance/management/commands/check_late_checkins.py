@@ -29,16 +29,22 @@ class Command(BaseCommand):
         from communication.models import Notification
         from core.notify import notify_user, HIGH
 
-        now       = timezone.localtime()
-        today     = now.date()
-        weekday   = today.weekday()  # 0=Mon … 6=Sun
+        now = timezone.localtime()
+        today = now.date()
+        weekday = today.weekday()  # 0=Mon … 6=Sun
 
         # Skip weekends — adjust if your org works weekends
         if weekday >= 5:
             return
 
         # Staff roles that are expected to check in
-        ACTIVE_ROLES = ["staff", "intern", "program_manager", "department_head", "admin"]
+        ACTIVE_ROLES = [
+            "staff",
+            "intern",
+            "program_manager",
+            "department_head",
+            "admin",
+        ]
 
         active_sites = ProjectSite.objects.filter(active=True)
         if not active_sites.exists():
@@ -46,7 +52,9 @@ class Command(BaseCommand):
 
         for site in active_sites:
             # Calculate deadline: expected_check_in + grace
-            deadline_naive = datetime.datetime.combine(today, site.expected_check_in_time)
+            deadline_naive = datetime.datetime.combine(
+                today, site.expected_check_in_time
+            )
             deadline = timezone.make_aware(deadline_naive)
             deadline += datetime.timedelta(minutes=site.grace_minutes)
 
@@ -90,7 +98,7 @@ class Command(BaseCommand):
                     else f"{minutes_late // 60}h {minutes_late % 60}m"
                 )
 
-                title   = f"⏰ Late check-in reminder"
+                title = f"⏰ Late check-in reminder"
                 message = (
                     f"You are {late_str} past the expected check-in time "
                     f"({site.expected_check_in_time.strftime('%H:%M')}) at {site.name}. "
@@ -106,7 +114,9 @@ class Command(BaseCommand):
                 )
                 logger.info(
                     "Late check-in warning sent to %s (%s late) at site %s",
-                    user, late_str, site.name,
+                    user,
+                    late_str,
+                    site.name,
                 )
                 self.stdout.write(
                     f"  ✓ Warned {user.get_full_name() or user.username} — {late_str} late at {site.name}"
@@ -143,9 +153,15 @@ class Command(BaseCommand):
         very_late = []
 
         for site in active_sites:
-            deadline_naive = __import__("datetime").datetime.combine(today, site.expected_check_in_time)
-            deadline = __import__("django.utils.timezone", fromlist=["make_aware"]).make_aware(deadline_naive)
-            deadline += __import__("datetime").timedelta(minutes=site.grace_minutes + THRESHOLD_MINUTES)
+            deadline_naive = __import__("datetime").datetime.combine(
+                today, site.expected_check_in_time
+            )
+            deadline = __import__(
+                "django.utils.timezone", fromlist=["make_aware"]
+            ).make_aware(deadline_naive)
+            deadline += __import__("datetime").timedelta(
+                minutes=site.grace_minutes + THRESHOLD_MINUTES
+            )
 
             if now < deadline:
                 continue
@@ -203,7 +219,9 @@ class Command(BaseCommand):
         if latest_end is None:
             return
         eod_naive = datetime.datetime.combine(today, latest_end)
-        eod = __import__("django.utils.timezone", fromlist=["make_aware"]).make_aware(eod_naive)
+        eod = __import__("django.utils.timezone", fromlist=["make_aware"]).make_aware(
+            eod_naive
+        )
         if now < eod:
             return  # End of day hasn't passed yet
 
@@ -216,8 +234,7 @@ class Command(BaseCommand):
             return
 
         early_records = (
-            Attendance.objects
-            .filter(
+            Attendance.objects.filter(
                 check_in_time__date=today,
                 departure_status=Attendance.DepartureStatus.LEFT_EARLY,
                 status=Attendance.Status.CHECKED_OUT,
@@ -231,10 +248,16 @@ class Command(BaseCommand):
 
         lines = []
         for rec in early_records:
-            name      = rec.user.get_full_name() or rec.user.username
-            out_str   = __import__("django.utils.timezone", fromlist=["localtime"]).localtime(rec.check_out_time).strftime("%H:%M")
-            expected  = rec.project_site.expected_check_out_time.strftime("%H:%M")
-            lines.append(f"{name} — checked out at {out_str} (expected {expected}, {rec.project_site.name})")
+            name = rec.user.get_full_name() or rec.user.username
+            out_str = (
+                __import__("django.utils.timezone", fromlist=["localtime"])
+                .localtime(rec.check_out_time)
+                .strftime("%H:%M")
+            )
+            expected = rec.project_site.expected_check_out_time.strftime("%H:%M")
+            lines.append(
+                f"{name} — checked out at {out_str} (expected {expected}, {rec.project_site.name})"
+            )
 
         count = len(lines)
         detail = "; ".join(lines[:8])

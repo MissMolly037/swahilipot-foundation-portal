@@ -10,7 +10,9 @@ def visible_tasks_for(user):
     - Department Head   : tasks in their department + tasks they created or are assigned to
     - Staff / Intern    : only tasks assigned to them
     """
-    qs = Task.objects.select_related("assigned_to", "assigned_by", "assigned_to__department")
+    qs = Task.objects.select_related(
+        "assigned_to", "assigned_by", "assigned_to__department"
+    )
 
     if user.is_portal_admin():
         return qs
@@ -20,9 +22,9 @@ def visible_tasks_for(user):
 
     if user.role == user.Role.DEPARTMENT_HEAD and user.department_id:
         return qs.filter(
-            Q(assigned_to__department=user.department) |
-            Q(assigned_by=user) |
-            Q(assigned_to=user)
+            Q(assigned_to__department=user.department)
+            | Q(assigned_by=user)
+            | Q(assigned_to=user)
         )
 
     # Staff / Intern — only assigned tasks
