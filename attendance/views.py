@@ -1,12 +1,15 @@
+from datetime import datetime, timedelta
 from decimal import Decimal
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from datetime import datetime, timedelta
+
 from communication.models import Notification
 from core.permissions import role_required
+
 from .forms import ProjectSiteForm
 
 try:
@@ -130,7 +133,6 @@ def auto_checkout_stale_sessions():
             continue  # Still within the grace window — don't close yet
 
         # ── Close the session ──────────────────────────────────────────────
-        close_time = expected_checkout + timedelta(minutes=site.grace_minutes)
         # Record at the actual expected checkout (not grace end) for accurate hours
         record_close_time = expected_checkout
         duration = record_close_time - record.check_in_time
@@ -227,8 +229,8 @@ def attendance_home(request):
     # ── Active event venue hint ───────────────────────────────────────────
     # If the user is registered for an event happening today, find which
     # project site is required so we can highlight it in the template.
-    from events.models import EventRegistration
     from attendance.utils import haversine_distance_meters as _hav
+    from events.models import EventRegistration
 
     now_dt = timezone.now()
     event_reg = (
@@ -297,7 +299,7 @@ def site_create(request):
     }
     form = ProjectSiteForm(request.POST or None, initial=initial)
     if request.method == "POST" and form.is_valid():
-        site = form.save()
+        form.save()
         messages.success(request, "Project site saved.")
         return redirect("attendance:sites")
     return render(
@@ -361,8 +363,8 @@ def check_in(request):
     # ── Event venue validation ────────────────────────────────────────────
     # If the user is registered for an active event today, verify they are
     # checking in at the correct venue site the admin set for that event.
-    from events.models import EventRegistration
     from attendance.utils import haversine_distance_meters
+    from events.models import EventRegistration
 
     now_dt = timezone.now()
     active_event_reg = (
@@ -408,7 +410,7 @@ def check_in(request):
         )
         return redirect("attendance:home")
     arr = arrival_status(now_dt, site)
-    record = Attendance.objects.create(
+    Attendance.objects.create(
         user=request.user,
         project_site=site,
         check_in_latitude=lat,
@@ -498,7 +500,8 @@ def check_out(request):
 
     # ── Early check-out: alert managers immediately via push + in-app ──────
     if dep == Attendance.DepartureStatus.LEFT_EARLY:
-        from core.notify import notify_managers, HIGH as _HIGH
+        from core.notify import HIGH as _HIGH
+        from core.notify import notify_managers
 
         _name = request.user.get_full_name() or request.user.username
         _actual_str = timezone.localtime(now).strftime("%H:%M")
@@ -674,9 +677,10 @@ def attendance_late_arrivals(request):
 # ---------------------------------------------------------------------------
 
 import json
+
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
+
 from .models import GeofenceViolation
 
 
@@ -1054,8 +1058,9 @@ def my_location_timeout(request):
 @login_required
 def location_timeout_report(request, fmt):
     """Download own location timeout history as PDF or Excel."""
-    from .models import LocationLog
     from core.reports import excel_response, pdf_response
+
+    from .models import LocationLog
 
     logs = LocationLog.objects.filter(user=request.user).order_by("-turned_off_at")
     headers = ["Turned Off At", "Turned On At", "Duration Off", "Status"]
@@ -1138,6 +1143,7 @@ def geofence_violations_report(request, fmt):
 def user_location_log(request, user_pk):
     """Per-user location on/off history — Admin and PM only."""
     from accounts.models import User as PortalUser
+
     from .models import LocationLog
 
     target = get_object_or_404(PortalUser, pk=user_pk)
@@ -1218,8 +1224,9 @@ def missed_checkout(request):
     with action=auto_checkout_forgot, keyed by user+date from description.
     """
     import re
-    from django.utils import timezone as _tz
+
     from django.db.models import Q
+    from django.utils import timezone as _tz
 
     # Collect (user_id, check_in_date) from activity log entries
     auto_log_qs = (
@@ -1271,7 +1278,9 @@ def missed_checkout(request):
 def missed_checkout_report(request, fmt):
     """Download missed-checkout records as PDF or Excel."""
     import re
+
     from django.db.models import Q
+
     from core.reports import excel_response, pdf_response
 
     auto_log_qs = (
@@ -1340,7 +1349,6 @@ def mobile_checkin(request):
     """Standalone mobile-optimised GPS check-in / check-out page."""
     auto_checkout_stale_sessions()
     today = timezone.localdate()
-    now_dt = timezone.now()
     current = Attendance.objects.filter(
         user=request.user, status=Attendance.Status.CHECKED_IN
     ).first()

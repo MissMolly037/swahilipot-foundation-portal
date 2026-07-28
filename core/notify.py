@@ -13,8 +13,8 @@ Call notify_user(user, title, message) for a single user.
 All functions accept an optional ``priority`` keyword argument.
 """
 
-from communication.models import Notification
 from accounts.models import User
+from communication.models import Notification
 
 LOW = Notification.Priority.LOW
 MEDIUM = Notification.Priority.MEDIUM

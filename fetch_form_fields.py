@@ -1,4 +1,6 @@
-import urllib.request, re, sys
+import re
+import sys
+import urllib.request
 
 url = "https://docs.google.com/forms/d/e/1FAIpQLSedV4ca8NSItkayTczjXGSQDETcUDpt4u936FxE9ul1rsVl4g/viewform"
 req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})

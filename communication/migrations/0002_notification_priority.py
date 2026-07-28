@@ -13,9 +13,9 @@ class Migration(migrations.Migration):
             name="priority",
             field=models.CharField(
                 choices=[
-                    ("low",      "Low"),
-                    ("medium",   "Medium"),
-                    ("high",     "High"),
+                    ("low", "Low"),
+                    ("medium", "Medium"),
+                    ("high", "High"),
                     ("critical", "Critical"),
                 ],
                 default="low",

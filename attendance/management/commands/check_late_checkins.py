@@ -24,10 +24,10 @@ class Command(BaseCommand):
     help = "Send late check-in push notifications for missed expected check-ins."
 
     def handle(self, *args, **options):
-        from attendance.models import Attendance, ProjectSite
         from accounts.models import User
+        from attendance.models import Attendance, ProjectSite
         from communication.models import Notification
-        from core.notify import notify_user, HIGH
+        from core.notify import HIGH, notify_user
 
         now = timezone.localtime()
         today = now.date()
@@ -77,7 +77,7 @@ class Command(BaseCommand):
             ).exclude(pk__in=checked_in_today)
 
             # Warning title pattern — used to detect if already sent today
-            warning_title_prefix = f"⏰ Late check-in"
+            warning_title_prefix = "⏰ Late check-in"
 
             for user in candidates:
                 # Check if warning already sent today for this site
@@ -98,7 +98,7 @@ class Command(BaseCommand):
                     else f"{minutes_late // 60}h {minutes_late % 60}m"
                 )
 
-                title = f"⏰ Late check-in reminder"
+                title = "⏰ Late check-in reminder"
                 message = (
                     f"You are {late_str} past the expected check-in time "
                     f"({site.expected_check_in_time.strftime('%H:%M')}) at {site.name}. "
@@ -134,10 +134,10 @@ class Command(BaseCommand):
         (>30 min past deadline). Fires once per day when at least one person
         is severely late.
         """
-        from attendance.models import Attendance, ProjectSite
         from accounts.models import User
+        from attendance.models import Attendance
         from communication.models import Notification
-        from core.notify import notify_managers, CRITICAL
+        from core.notify import CRITICAL, notify_managers
 
         THRESHOLD_MINUTES = 30
         digest_title = "🚨 Staff late check-in alert"
@@ -205,9 +205,10 @@ class Command(BaseCommand):
         Skips if no one checked out early, or if the digest was already sent.
         """
         import datetime
+
         from attendance.models import Attendance
         from communication.models import Notification
-        from core.notify import notify_managers, HIGH
+        from core.notify import HIGH, notify_managers
 
         digest_title = "📋 Early check-out summary"
 

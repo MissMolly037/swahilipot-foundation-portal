@@ -7,7 +7,9 @@ def use_superuser_as_admin(apps, schema_editor):
     superusers = User.objects.filter(is_superuser=True).order_by("id")
     primary_admin = superusers.first()
     if primary_admin:
-        User.objects.filter(username="portal_admin").exclude(pk=primary_admin.pk).delete()
+        User.objects.filter(username="portal_admin").exclude(
+            pk=primary_admin.pk
+        ).delete()
 
 
 def noop_reverse(apps, schema_editor):

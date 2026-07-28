@@ -2,10 +2,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+
+from core.notify import notify_managers, notify_user
 from core.permissions import capability_required
-from core.notify import notify_user, notify_managers
-from .forms import TaskAttachmentForm, TaskCommentForm, TaskForm, TaskUpdateForm
+
 from .access import user_can_access_task, visible_tasks_for
+from .forms import TaskAttachmentForm, TaskCommentForm, TaskForm, TaskUpdateForm
 from .models import Task
 
 

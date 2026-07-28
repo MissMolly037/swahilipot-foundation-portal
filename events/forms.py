@@ -1,5 +1,7 @@
 from django import forms
+
 from attendance.models import ProjectSite
+
 from .models import Event
 
 

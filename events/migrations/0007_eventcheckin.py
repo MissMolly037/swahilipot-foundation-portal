@@ -16,11 +16,27 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="EventCheckIn",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("checked_in_at", models.DateTimeField(default=django.utils.timezone.now)),
-                ("latitude",  models.DecimalField(max_digits=10, decimal_places=7)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "checked_in_at",
+                    models.DateTimeField(default=django.utils.timezone.now),
+                ),
+                ("latitude", models.DecimalField(max_digits=10, decimal_places=7)),
                 ("longitude", models.DecimalField(max_digits=10, decimal_places=7)),
-                ("distance_meters", models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0"))),
+                (
+                    "distance_meters",
+                    models.DecimalField(
+                        max_digits=10, decimal_places=2, default=Decimal("0")
+                    ),
+                ),
                 (
                     "event",
                     models.ForeignKey(

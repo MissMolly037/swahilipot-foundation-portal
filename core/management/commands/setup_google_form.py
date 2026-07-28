@@ -17,8 +17,9 @@ Usage:
 import re
 import urllib.parse
 from pathlib import Path
-from django.core.management.base import BaseCommand
+
 from django.conf import settings
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
@@ -126,7 +127,7 @@ class Command(BaseCommand):
         self._update_env(env_path, "GOOGLE_FORM_EVENT_ID_FIELD", event_id_field)
         self._update_env(env_path, "GOOGLE_FORM_EVENT_NAME_FIELD", event_name_field)
 
-        self.stdout.write(self.style.SUCCESS(f"\n✓ Updated .env:"))
+        self.stdout.write(self.style.SUCCESS("\n✓ Updated .env:"))
         self.stdout.write(f"  GOOGLE_FORM_BASE_URL={base_url}")
         self.stdout.write(f"  GOOGLE_FORM_EVENT_ID_FIELD={event_id_field}")
         self.stdout.write(f"  GOOGLE_FORM_EVENT_NAME_FIELD={event_name_field}\n")

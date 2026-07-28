@@ -6,33 +6,45 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('attendance', '0001_initial'),
+        ("attendance", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='attendance',
-            name='arrival_status',
-            field=models.CharField(blank=True, choices=[('early', 'Early'), ('on_time', 'On Time'), ('late', 'Late')], max_length=20),
+            model_name="attendance",
+            name="arrival_status",
+            field=models.CharField(
+                blank=True,
+                choices=[("early", "Early"), ("on_time", "On Time"), ("late", "Late")],
+                max_length=20,
+            ),
         ),
         migrations.AddField(
-            model_name='attendance',
-            name='departure_status',
-            field=models.CharField(blank=True, choices=[('left_early', 'Left Early'), ('on_time', 'On Time'), ('left_late', 'Left Late')], max_length=20),
+            model_name="attendance",
+            name="departure_status",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("left_early", "Left Early"),
+                    ("on_time", "On Time"),
+                    ("left_late", "Left Late"),
+                ],
+                max_length=20,
+            ),
         ),
         migrations.AddField(
-            model_name='projectsite',
-            name='expected_check_in_time',
-            field=models.TimeField(default='09:00'),
+            model_name="projectsite",
+            name="expected_check_in_time",
+            field=models.TimeField(default="09:00"),
         ),
         migrations.AddField(
-            model_name='projectsite',
-            name='expected_check_out_time',
-            field=models.TimeField(default='17:00'),
+            model_name="projectsite",
+            name="expected_check_out_time",
+            field=models.TimeField(default="17:00"),
         ),
         migrations.AddField(
-            model_name='projectsite',
-            name='grace_minutes',
+            model_name="projectsite",
+            name="grace_minutes",
             field=models.PositiveSmallIntegerField(default=15),
         ),
     ]

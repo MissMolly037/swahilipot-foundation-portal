@@ -3,14 +3,15 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+
 from accounts.models import Department, User
+from core.notify import notify_all, notify_dept, notify_user
 from core.permissions import capability_required, role_required
-from core.notify import notify_all, notify_user, notify_dept
+
 from .forms import AnnouncementForm, ChannelForm, ChannelMessageForm, DirectMessageForm
 from .models import (
     Announcement,
     DepartmentChannel,
-    ChannelMessage,
     DirectMessage,
     Notification,
 )
@@ -258,8 +259,8 @@ def notifications(request):
 # ── Web Push subscription endpoints ──────────────────────────────────────────
 
 import json as _json
+
 from django.conf import settings as _settings
-from django.views.decorators.csrf import csrf_exempt as _csrf_exempt
 
 
 @login_required

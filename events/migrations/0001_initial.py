@@ -15,44 +15,104 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Event',
+            name="Event",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=220)),
-                ('description', models.TextField()),
-                ('location', models.CharField(max_length=220)),
-                ('start_date', models.DateTimeField()),
-                ('end_date', models.DateTimeField()),
-                ('capacity', models.PositiveIntegerField(default=50)),
-                ('banner', models.ImageField(blank=True, null=True, upload_to='event_banners/')),
-                ('qr_code', models.ImageField(blank=True, null=True, upload_to='event_qr/')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=220)),
+                ("description", models.TextField()),
+                ("location", models.CharField(max_length=220)),
+                ("start_date", models.DateTimeField()),
+                ("end_date", models.DateTimeField()),
+                ("capacity", models.PositiveIntegerField(default=50)),
+                (
+                    "banner",
+                    models.ImageField(
+                        blank=True, null=True, upload_to="event_banners/"
+                    ),
+                ),
+                (
+                    "qr_code",
+                    models.ImageField(blank=True, null=True, upload_to="event_qr/"),
+                ),
             ],
             options={
-                'ordering': ('start_date',),
+                "ordering": ("start_date",),
             },
         ),
         migrations.CreateModel(
-            name='EventRegistration',
+            name="EventRegistration",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('registration_date', models.DateTimeField(auto_now_add=True)),
-                ('event', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='registrations', to='events.event')),
-                ('participant', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='event_registrations', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("registration_date", models.DateTimeField(auto_now_add=True)),
+                (
+                    "event",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="registrations",
+                        to="events.event",
+                    ),
+                ),
+                (
+                    "participant",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="event_registrations",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('event', 'participant')},
+                "unique_together": {("event", "participant")},
             },
         ),
         migrations.CreateModel(
-            name='EventAttendance',
+            name="EventAttendance",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('timestamp', models.DateTimeField(auto_now_add=True)),
-                ('event', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attendance', to='events.event')),
-                ('participant', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='event_attendance', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("timestamp", models.DateTimeField(auto_now_add=True)),
+                (
+                    "event",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="attendance",
+                        to="events.event",
+                    ),
+                ),
+                (
+                    "participant",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="event_attendance",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('event', 'participant')},
+                "unique_together": {("event", "participant")},
             },
         ),
     ]

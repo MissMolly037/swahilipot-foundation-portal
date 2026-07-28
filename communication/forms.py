@@ -1,5 +1,5 @@
 from django import forms
-from accounts.models import Department, User
+
 from .models import Announcement, ChannelMessage, DepartmentChannel, DirectMessage
 
 

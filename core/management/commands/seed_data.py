@@ -1,8 +1,9 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
+
 from accounts.models import Department, User
 from attendance.models import ProjectSite
-from communication.models import DepartmentChannel, Announcement
+from communication.models import Announcement, DepartmentChannel
 from events.models import Event
 
 

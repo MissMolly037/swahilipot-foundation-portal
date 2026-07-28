@@ -30,14 +30,14 @@ class Command(BaseCommand):
             )
             return
 
-        self.stdout.write(self.style.SUCCESS(f"\n✅  Your ngrok URL is:\n"))
+        self.stdout.write(self.style.SUCCESS("\n✅  Your ngrok URL is:\n"))
         self.stdout.write(self.style.HTTP_INFO(f"    {url}\n"))
 
         self.stdout.write("\n" + "─" * 60)
         self.stdout.write(self.style.WARNING("\nStep 1 — Update your .env file:\n"))
         self.stdout.write(f"    DJANGO_SITE_BASE_URL={url}\n")
         self.stdout.write(
-            f"    DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost,.ngrok-free.app\n"
+            "    DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost,.ngrok-free.app\n"
         )
 
         self.stdout.write(
@@ -82,8 +82,8 @@ class Command(BaseCommand):
 
     def _get_ngrok_url(self):
         """Query the ngrok local API (http://127.0.0.1:4040/api/tunnels)."""
-        import urllib.request
         import json
+        import urllib.request
 
         try:
             with urllib.request.urlopen(

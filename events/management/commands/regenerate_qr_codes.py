@@ -10,6 +10,7 @@ Usage:
 """
 
 from django.core.management.base import BaseCommand
+
 from events.models import Event
 
 
@@ -22,7 +23,7 @@ class Command(BaseCommand):
         self.stdout.write(f"Processing {total} event(s)...")
 
         for event in events:
-            old_qr = event.qr_code.name if event.qr_code else "(none)"
+
             event.qr_code = None  # force regeneration
             event.regenerate_qr()
             if event.qr_code:

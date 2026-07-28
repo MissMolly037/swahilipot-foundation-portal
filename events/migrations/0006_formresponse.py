@@ -13,9 +13,20 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="FormResponse",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("submitted_at", models.DateTimeField(default=django.utils.timezone.now)),
-                ("respondent_name",  models.CharField(blank=True, max_length=220)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "submitted_at",
+                    models.DateTimeField(default=django.utils.timezone.now),
+                ),
+                ("respondent_name", models.CharField(blank=True, max_length=220)),
                 ("respondent_email", models.CharField(blank=True, max_length=254)),
                 ("respondent_phone", models.CharField(blank=True, max_length=50)),
                 ("raw_data", models.JSONField(blank=True, default=dict)),

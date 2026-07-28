@@ -26,7 +26,8 @@ def send_push(user, title, body, link="/", priority="low", tag="sph-notification
     Silently skips if pywebpush is unavailable or no subscriptions exist.
     """
     try:
-        from pywebpush import webpush, WebPushException
+        from pywebpush import WebPushException, webpush
+
         from .models import PushSubscription
     except ImportError:
         return

@@ -1,6 +1,7 @@
-import uuid
 import urllib.parse
+import uuid
 from decimal import Decimal
+
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
@@ -119,7 +120,6 @@ class Event(models.Model):
         return build_form_url(self) or _get_form_setting("GOOGLE_FORM_BASE_URL", "")
 
     def save(self, *args, **kwargs):
-        is_new = self.pk is None
         super().save(*args, **kwargs)
         # Rebuild pre-filled URL after save (so self.pk is a real number)
         new_url = build_form_url(self)

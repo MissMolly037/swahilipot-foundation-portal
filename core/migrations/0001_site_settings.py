@@ -7,21 +7,31 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='SiteSettings',
+            name="SiteSettings",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('logo', models.ImageField(blank=True, null=True, upload_to='site/')),
-                ('site_name', models.CharField(default='Swahilipot Hub Portal', max_length=100)),
-                ('tagline', models.CharField(default='Staff Portal', max_length=200)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("logo", models.ImageField(blank=True, null=True, upload_to="site/")),
+                (
+                    "site_name",
+                    models.CharField(default="Swahilipot Hub Portal", max_length=100),
+                ),
+                ("tagline", models.CharField(default="Staff Portal", max_length=200)),
             ],
             options={
-                'verbose_name': 'Site Settings',
-                'verbose_name_plural': 'Site Settings',
+                "verbose_name": "Site Settings",
+                "verbose_name_plural": "Site Settings",
             },
         ),
     ]

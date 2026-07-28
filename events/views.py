@@ -1,23 +1,25 @@
+import json
 from decimal import Decimal
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import models as db_models
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from django.db import models as db_models
-import json
-from core.permissions import capability_required
-from core.notify import notify_all, notify_user, notify_managers
-from core.reports import excel_response, pdf_response
+
 from attendance.utils import haversine_distance_meters
+from core.notify import notify_all, notify_managers, notify_user
+from core.permissions import capability_required
+from core.reports import excel_response, pdf_response
+
 from .forms import EventForm
 from .models import (
     Event,
-    EventAttendance,
-    EventRegistration,
     EventCheckIn,
+    EventRegistration,
     FormResponse,
 )
 

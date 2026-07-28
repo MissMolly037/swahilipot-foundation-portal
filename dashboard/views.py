@@ -1,8 +1,12 @@
+import json as _json
+
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Sum as db_Sum
+from django.db.models import Count
+from django.db.models import Sum as db_Sum
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
+
 from accounts.models import User
 from attendance.models import Attendance
 from communication.models import Announcement
@@ -11,7 +15,6 @@ from core.reports import excel_response, pdf_response
 from events.models import Event
 from suggestions.models import Suggestion
 from tasks.access import visible_tasks_for
-import json as _json
 
 
 @login_required
@@ -205,6 +208,7 @@ def radio_stream_url(request):
     Cached for 5 minutes so repeated page loads don't hammer the API.
     """
     import urllib.request as _urllib_req
+
     from django.core.cache import cache
 
     CACHE_KEY = "swahilipotfm_stream_url"
@@ -330,8 +334,8 @@ def filtered_dates(request, qs, field):
 
 @capability_required("can_view_reports")
 def reports(request):
-    from events.models import Event, EventRegistration, EventCheckIn
     from accounts.models import User as _User
+    from events.models import Event, EventCheckIn, EventRegistration
 
     total_portal = _User.objects.filter(is_active=True).count()
     events_data = []
@@ -451,7 +455,7 @@ def report_download(request, kind, fmt):
             for t in qs
         ]
     elif kind == "events":
-        from events.models import EventRegistration, EventCheckIn
+        from events.models import EventCheckIn, EventRegistration
 
         qs = filtered_dates(request, Event.objects.all(), "start_date")
         headers = [

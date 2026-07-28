@@ -14,8 +14,8 @@ Middleware for the Swahilipot Hub Staff Portal.
 
 from urllib.parse import urlparse
 
-from django.contrib.auth import logout
 from django.contrib import messages
+from django.contrib.auth import logout
 from django.middleware.csrf import CsrfViewMiddleware
 
 # ── 1. Replit-aware CSRF middleware ───────────────────────────────────────

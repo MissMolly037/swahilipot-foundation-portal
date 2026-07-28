@@ -1,40 +1,37 @@
-﻿"""
+"""
 core/reports.py — Swahilipot Hub Premium Report Engine
 Professional PDF (ReportLab) and Excel (openpyxl) generation.
 """
 
-from io import BytesIO
 from datetime import datetime
+from io import BytesIO
 
 try:
     from openpyxl import Workbook
-    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side, GradientFill
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
     from openpyxl.utils import get_column_letter
-    from openpyxl.drawing.image import Image as XLImage
 except ImportError:
     Workbook = None
 
 try:
-    from reportlab.lib.pagesizes import A4, landscape
-    from reportlab.pdfgen import canvas as rl_canvas
     from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import mm
+    from reportlab.pdfgen import canvas as rl_canvas
     from reportlab.platypus import (
+        Paragraph,
         SimpleDocTemplate,
+        Spacer,
         Table,
         TableStyle,
-        Paragraph,
-        Spacer,
-        HRFlowable,
-        KeepTogether,
     )
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
 except ImportError:
     rl_canvas = None
 
-from django.http import HttpResponse
 from django.contrib.staticfiles import finders
+from django.http import HttpResponse
 
 # ── Brand palette ──────────────────────────────────────────────────────────
 BRAND_NAME = "Swahilipot Hub Foundation"
@@ -106,7 +103,6 @@ def excel_response(filename, headers, rows, subtitle=""):
 
     thin_blue = Side(style="thin", color=HEX_BORDER)
     thick_navy = Side(style="medium", color=HEX_NAVY)
-    no_border = Side(style=None)
     hdr_border = Border(
         bottom=thick_navy,
         top=Side(style="thin", color=HEX_NAVY),

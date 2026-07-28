@@ -1,10 +1,12 @@
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate
-from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect, render
+
 from core.permissions import role_required
+
 from .forms import ProfileForm, UserEditForm
-from .models import User, Department
+from .models import Department, User
 
 
 @login_required

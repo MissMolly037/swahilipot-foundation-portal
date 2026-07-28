@@ -11,8 +11,8 @@ Schedule: run once on Monday morning (handled by run_scheduler.sh).
 Safe to re-run: a duplicate-send guard prevents sending more than once per week.
 """
 
-import io
 import datetime
+import io
 import logging
 
 from django.core.management.base import BaseCommand
@@ -33,7 +33,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         from accounts.models import User
-        from attendance.models import Attendance, ProjectSite
+        from attendance.models import Attendance
         from communication.models import Notification
 
         now = timezone.localtime()
@@ -226,7 +226,7 @@ class Command(BaseCommand):
                 )
 
         # ── In-app + push notification to each manager ────────────────────────
-        from core.notify import notify_managers, MEDIUM
+        from core.notify import MEDIUM, notify_managers
 
         notify_managers(
             title=guard_title,
@@ -255,7 +255,7 @@ class Command(BaseCommand):
         """Build a styled Excel workbook and return bytes."""
         try:
             import openpyxl
-            from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+            from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
             from openpyxl.utils import get_column_letter
         except ImportError:
             # Fallback: plain CSV bytes
@@ -267,10 +267,8 @@ class Command(BaseCommand):
         NAVY = "1E3A5F"
         BLUE = "1E40AF"
         GOLD = "F59E0B"
-        LIGHT = "EFF6FF"
         STRIPE = "DBEAFE"
         RED = "FEE2E2"
-        GREEN = "D1FAE5"
 
         wb = openpyxl.Workbook()
         ws = wb.active

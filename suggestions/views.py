@@ -3,8 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
-from core.permissions import capability_required
 from core.notify import notify_managers, notify_user
+from core.permissions import capability_required
+
 from .forms import SuggestionForm, SuggestionReviewForm
 from .models import Suggestion
 
